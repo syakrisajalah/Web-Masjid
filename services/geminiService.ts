@@ -1,9 +1,30 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+// Lazy initialization to prevent runtime crash in browsers where process is undefined
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!aiInstance) {
+    // Safety check: only access process.env if it exists. 
+    // In Vercel/Builds, process.env.API_KEY is replaced by string literal.
+    // In raw browser, this prevents ReferenceError.
+    let key = '';
+    try {
+      if (typeof process !== 'undefined' && process.env) {
+        key = process.env.API_KEY || '';
+      }
+    } catch (e) {
+      console.warn("Environment variable access failed", e);
+    }
+    
+    // Fallback or empty string allowed, will fail gracefully later if used
+    aiInstance = new GoogleGenAI({ apiKey: key });
+  }
+  return aiInstance;
+};
 
 export const createConsultationSession = () => {
+  const ai = getAI();
   return ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
