@@ -235,8 +235,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
           </div>
         </div>
-        <div className="text-center mt-10 pt-6 border-t border-emerald-800 text-xs opacity-60">
-          © 2024 Masjid Al-Mustaqbal Digital System. All rights reserved.
+        <div className="text-center mt-10 pt-6 border-t border-emerald-800 text-xs opacity-60 flex justify-center items-center gap-2">
+          <span>© 2024 Masjid Al-Mustaqbal Digital System. All rights reserved.</span>
+          <span className="bg-emerald-800 px-2 py-0.5 rounded text-[10px]">v1.1</span>
         </div>
       </footer>
     </div>
