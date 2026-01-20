@@ -112,7 +112,7 @@ const fetchData = async (action: string, params: string = '') => {
     if (!response.ok) throw new Error('Network error');
     return await response.json();
   } catch (error) {
-    console.warn(`API Error [${action}]: Using mock data.`, error);
+    console.error(`Error fetching ${action}:`, error);
     return null;
   }
 };
@@ -120,14 +120,12 @@ const fetchData = async (action: string, params: string = '') => {
 export const api = {
   getPrayerTimes: async (): Promise<PrayerTime[]> => {
     const data = await fetchData('getPrayerTimes');
-    // If array and not empty, use it. If empty or invalid, use mock.
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_PRAYER_TIMES;
+    return Array.isArray(data) ? data : MOCK_PRAYER_TIMES;
   },
 
   getPrograms: async (): Promise<ProgramService[]> => {
     const data = await fetchData('getPrograms');
-    // Important: Prevent empty homepage if sheet is empty
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_PROGRAMS;
+    return Array.isArray(data) ? data : MOCK_PROGRAMS;
   },
 
   getProfile: async (): Promise<{ detail: MosqueProfileData, staff: Staff[] }> => {
@@ -147,12 +145,12 @@ export const api = {
 
   getBankAccounts: async (): Promise<BankAccount[]> => {
     const data = await fetchData('getBankAccounts');
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_BANKS;
+    return Array.isArray(data) ? data : MOCK_BANKS;
   },
 
   getPosts: async (): Promise<Post[]> => {
     const data = await fetchData('getPosts');
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_POSTS;
+    return Array.isArray(data) ? data : MOCK_POSTS;
   },
 
   getPostById: async (id: string): Promise<Post | undefined> => {
@@ -163,12 +161,12 @@ export const api = {
 
   getTransactions: async (): Promise<Transaction[]> => {
     const data = await fetchData('getFinance');
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_TRANSACTIONS;
+    return Array.isArray(data) ? data : MOCK_TRANSACTIONS;
   },
 
   getGallery: async (): Promise<MediaItem[]> => {
     const data = await fetchData('getGallery');
-    return (Array.isArray(data) && data.length > 0) ? data : MOCK_GALLERY;
+    return Array.isArray(data) ? data : MOCK_GALLERY;
   },
 
   // --- CONSULTATION API ---

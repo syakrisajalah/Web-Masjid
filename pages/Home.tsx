@@ -14,26 +14,17 @@ export const Home: React.FC = () => {
     const loadData = async () => {
       setLoading(true);
       
-      try {
-        // Fetch data
-        const [times, programData] = await Promise.all([
-          api.getPrayerTimes(),
-          api.getPrograms()
-        ]);
+      const [times, programData] = await Promise.all([
+        api.getPrayerTimes(),
+        api.getPrograms()
+      ]);
 
-        console.log("Home Data Loaded:", { times, programData }); // Debug log
-
-        // Defensive check: Ensure we strictly have arrays. 
-        // If API returns something weird, fallback to empty array immediately.
-        setPrayerTimes(Array.isArray(times) ? times : []);
-        setPrograms(Array.isArray(programData) ? programData : []);
-        
-        setNextPrayer('Ashar');
-      } catch (error) {
-        console.error("Failed to load home data", error);
-      } finally {
-        setLoading(false);
-      }
+      setPrayerTimes(times);
+      setPrograms(programData);
+      
+      // Simple logic to set next prayer (mock logic)
+      setNextPrayer('Ashar');
+      setLoading(false);
     };
 
     loadData();
@@ -94,16 +85,12 @@ export const Home: React.FC = () => {
              </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              {Array.isArray(prayerTimes) && prayerTimes.length > 0 ? (
-                prayerTimes.map((pt) => (
-                  <div key={pt.name} className={`text-center p-4 rounded-xl transition-all ${pt.name === nextPrayer ? 'bg-emerald-600 text-white shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-700 hover:bg-emerald-50 dark:hover:bg-gray-600'}`}>
-                    <p className={`text-xs font-medium uppercase mb-1 ${pt.name === nextPrayer ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'}`}>{pt.name}</p>
-                    <p className={`text-xl font-bold ${pt.name === nextPrayer ? 'text-white' : 'text-gray-800 dark:text-white'}`}>{pt.time}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center text-gray-500">Data jadwal belum tersedia</div>
-              )}
+              {prayerTimes.map((pt) => (
+                <div key={pt.name} className={`text-center p-4 rounded-xl transition-all ${pt.name === nextPrayer ? 'bg-emerald-600 text-white shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-700 hover:bg-emerald-50 dark:hover:bg-gray-600'}`}>
+                  <p className={`text-xs font-medium uppercase mb-1 ${pt.name === nextPrayer ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'}`}>{pt.name}</p>
+                  <p className={`text-xl font-bold ${pt.name === nextPrayer ? 'text-white' : 'text-gray-800 dark:text-white'}`}>{pt.time}</p>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -122,20 +109,13 @@ export const Home: React.FC = () => {
              </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Extremely Safe Rendering: Check existence before map */}
-            {Array.isArray(programs) && programs.length > 0 ? (
-                programs.map((item, idx) => (
-                    <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700">
-                        <div className="text-4xl mb-4">{item.icon}</div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{item.title}</h3>
-                        <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
-                    </div>
-                ))
-            ) : (
-                <div className="col-span-full text-center text-gray-500 py-10 border-2 border-dashed border-gray-200 rounded-xl">
-                    <p>Belum ada program yang ditampilkan.</p>
+            {programs.map((item, idx) => (
+                <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700">
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
                 </div>
-            )}
+            ))}
             </div>
         )}
       </section>
