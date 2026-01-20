@@ -1,0 +1,7 @@
+{
+  "name": "Web Masjid Al-Mustaqbal Digital",
+  "description": "A comprehensive digital platform for modern mosque management, including prayer times, donations, and AI consultation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
