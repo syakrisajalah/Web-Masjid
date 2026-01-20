@@ -47,7 +47,7 @@ export const createConsultationSession = () => {
   }
 
   return ai.chats.create({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-flash-preview',
     config: {
       systemInstruction: `Anda adalah seorang Ustadz AI yang bijaksana, ramah, dan berpengetahuan luas tentang agama Islam. 
       Tugas anda adalah menjawab pertanyaan jamaah tentang fiqih, akidah, sejarah Islam, dan konsultasi kehidupan sehari-hari berdasarkan Al-Quran dan As-Sunnah.
