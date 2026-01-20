@@ -11,52 +11,12 @@ import { BlogList } from './pages/BlogList';
 import { BlogDetail } from './pages/BlogDetail';
 import { FinancialReport } from './pages/FinancialReport';
 import { Login } from './pages/Login';
-import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn, AlertTriangle } from 'lucide-react';
-
-// --- Error Boundary ---
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: any) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: any, errorInfo: any) {
-    console.error("Uncaught error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl text-center max-w-md w-full border border-gray-200 dark:border-gray-700">
-            <AlertTriangle className="mx-auto text-yellow-500 mb-4" size={48} />
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Terjadi Kesalahan</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Maaf, aplikasi mengalami gangguan saat memuat data.
-            </p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition"
-            >
-              Muat Ulang Halaman
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn } from 'lucide-react';
 
 // Contexts
 interface AuthContextType {
   user: User;
-  login: (role: UserRole, userData?: User) => void;
+  login: (role: UserRole, userData?: User) => void; // Updated signature
   logout: () => void;
 }
 
@@ -248,9 +208,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <ErrorBoundary>
-            {children}
-        </ErrorBoundary>
+        {children}
       </main>
 
       {/* Footer */}
@@ -301,6 +259,7 @@ export default function App() {
     if (userData) {
         setUser(userData);
     } else {
+        // Fallback backward compatibility
         const name = role === UserRole.ADMIN ? 'Administrator' : 'Hamba Allah';
         setUser({ id: '1', name, role, email: `${role}@masjid.id` });
     }
