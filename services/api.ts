@@ -1,8 +1,17 @@
 import { User, Post, Transaction, PrayerTime, MediaItem, UserRole, ProgramService, MosqueProfileData, Staff, BankAccount, ConsultationItem } from '../types';
 
 const SCRIPT_URL_KEY = 'masjid_app_script_url';
+const ENV_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
 
-export const getScriptUrl = () => localStorage.getItem(SCRIPT_URL_KEY);
+export const getScriptUrl = () => {
+  // 1. Cek LocalStorage (Biasanya diset manual oleh Admin lewat Dashboard untuk testing/override)
+  const localUrl = localStorage.getItem(SCRIPT_URL_KEY);
+  if (localUrl) return localUrl;
+
+  // 2. Jika tidak ada di LocalStorage (User biasa/HP), gunakan URL dari Environment Variable/Config
+  return ENV_SCRIPT_URL || '';
+};
+
 export const setScriptUrl = (url: string) => localStorage.setItem(SCRIPT_URL_KEY, url);
 
 // --- MOCK DATA ---
@@ -105,6 +114,7 @@ let MOCK_CONSULTATIONS: ConsultationItem[] = [
 
 const fetchData = async (action: string, params: string = '') => {
   const url = getScriptUrl();
+  // Jika URL tidak ada (baik di local storage maupun env), return null agar fallback ke mock data
   if (!url) return null;
 
   try {
