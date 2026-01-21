@@ -1,5 +1,5 @@
 export const MOSQUE_INFO = {
-    name: "Masjid Raya Al-Mustaqbal",
+    name: "Masjid Raya Al-Muamalah",
     slogan: "Pusat Peradaban & Pemberdayaan Umat",
     description: "Masjid Al-Mustaqbal hadir sebagai pusat kegiatan ibadah yang nyaman, modern, dan inklusif. Kami berkomitmen untuk membangun masyarakat madani melalui program pendidikan, sosial, dan ekonomi berbasis syariah.",
     address: "Jl. H. Juanda No. 99, Ciputat, Tangerang Selatan",
