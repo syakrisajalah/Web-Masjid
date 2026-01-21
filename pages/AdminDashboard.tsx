@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server } from 'lucide-react';
+import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info } from 'lucide-react';
 import { getScriptUrl, setScriptUrl } from '../services/api';
+import { MOSQUE_INFO } from '../config';
 
 export const AdminDashboard: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -174,6 +175,23 @@ export const AdminDashboard: React.FC = () => {
             </div>
         </div>
       )}
+
+      {/* Identity Info Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8 border-l-4 border-emerald-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <Info size={20} className="text-emerald-600" /> Identitas Masjid (Aktif)
+            </h3>
+            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                <p><span className="font-semibold text-gray-800 dark:text-gray-200 w-20 inline-block">Nama:</span> {MOSQUE_INFO.name}</p>
+                <p><span className="font-semibold text-gray-800 dark:text-gray-200 w-20 inline-block">Alamat:</span> {MOSQUE_INFO.address}</p>
+            </div>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400 max-w-sm">
+            <p className="font-semibold mb-1 text-gray-700 dark:text-gray-300">Ingin mengubah data ini?</p>
+            <p>Silakan edit file <code className="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded text-red-500 font-mono">config.ts</code> di source code aplikasi Anda. Perubahan akan otomatis diterapkan ke seluruh website.</p>
+        </div>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
