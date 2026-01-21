@@ -11,12 +11,14 @@ import { BlogList } from './pages/BlogList';
 import { BlogDetail } from './pages/BlogDetail';
 import { FinancialReport } from './pages/FinancialReport';
 import { Login } from './pages/Login';
-import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn } from 'lucide-react';
+import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn, MapPin, Phone, Mail } from 'lucide-react';
+import { setScriptUrl } from './services/api';
+import { MOSQUE_INFO } from './config';
 
 // Contexts
 interface AuthContextType {
   user: User;
-  login: (role: UserRole, userData?: User) => void; // Updated signature
+  login: (role: UserRole, userData?: User) => void; 
   logout: () => void;
 }
 
@@ -49,10 +51,25 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // --- MAGIC LINK CONFIGURATION LOGIC ---
+  useEffect(() => {
+    // Cek apakah ada parameter 'apiUrl' di URL browser
+    const params = new URLSearchParams(window.location.search);
+    const newApiUrl = params.get('apiUrl');
+
+    if (newApiUrl && newApiUrl.startsWith('https://script.google.com/')) {
+        setScriptUrl(newApiUrl);
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.hash;
+        window.history.pushState({path:newUrl},'',newUrl);
+        alert("Konfigurasi Database berhasil diperbarui otomatis!");
+        window.location.reload();
+    }
+  }, []);
+
   const navItems = [
     { path: '/', label: 'Beranda', icon: <HomeIcon size={20} /> },
     { path: '/profile', label: 'Profil', icon: <UserIcon size={20} /> },
-    { path: '/blog', label: 'Artikel & Berita', icon: <FileText size={20} /> },
+    { path: '/blog', label: 'Artikel', icon: <FileText size={20} /> },
     { path: '/gallery', label: 'Galeri', icon: <Image size={20} /> },
     { path: '/donation', label: 'Donasi', icon: <Heart size={20} /> },
     { path: '/finance', label: 'Keuangan', icon: <PieChart size={20} /> },
@@ -74,8 +91,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 text-emerald-700 dark:text-emerald-400">
               <Menu size={24} />
             </button>
-            <Link to="/" className="text-2xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
-              <span>🕌</span> <span className="hidden sm:inline">Al-Mustaqbal</span>
+            <Link to="/" className="text-xl md:text-2xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2 truncate max-w-[200px] md:max-w-none">
+              <span>🕌</span> <span className="hidden sm:inline">{MOSQUE_INFO.name}</span>
+              <span className="sm:hidden">Al-Mustaqbal</span>
             </Link>
           </div>
 
@@ -212,32 +230,45 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-emerald-900 text-emerald-100 py-10 mt-auto">
+      <footer className="bg-emerald-900 text-emerald-100 py-12 mt-auto">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4">Masjid Al-Mustaqbal</h3>
-            <p className="text-sm opacity-80 leading-relaxed">
-              Membangun peradaban Islam yang modern, inklusif, dan berkemajuan. Pusat ibadah dan pemberdayaan umat.
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                 <span>🕌</span> {MOSQUE_INFO.name}
+            </h3>
+            <p className="text-sm opacity-80 leading-relaxed max-w-xs">
+              {MOSQUE_INFO.slogan}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold text-white mb-4">Kontak Kami</h4>
-            <p className="text-sm opacity-80">Jl. Berkah Ilahi No. 99, Jakarta</p>
-            <p className="text-sm opacity-80 mt-2">+62 812-3456-7890</p>
-            <p className="text-sm opacity-80">info@almustaqbal.id</p>
+            <h4 className="font-semibold text-white mb-4 text-lg border-b border-emerald-700 pb-2 inline-block">Hubungi Kami</h4>
+            <div className="space-y-3 text-sm opacity-90">
+                <p className="flex items-start gap-3">
+                    <MapPin size={18} className="mt-1 flex-shrink-0 text-gold-400" />
+                    <span>{MOSQUE_INFO.address}</span>
+                </p>
+                <p className="flex items-center gap-3">
+                    <Phone size={18} className="text-gold-400" />
+                    <span>{MOSQUE_INFO.contact.phone}</span>
+                </p>
+                <p className="flex items-center gap-3">
+                    <Mail size={18} className="text-gold-400" />
+                    <span>{MOSQUE_INFO.contact.email}</span>
+                </p>
+            </div>
           </div>
           <div>
-            <h4 className="font-semibold text-white mb-4">Tautan Cepat</h4>
+            <h4 className="font-semibold text-white mb-4 text-lg border-b border-emerald-700 pb-2 inline-block">Tautan Cepat</h4>
             <div className="flex flex-col gap-2 text-sm opacity-80">
-              <Link to="/profile" className="hover:text-white">Tentang Kami</Link>
-              <Link to="/donation" className="hover:text-white">Salurkan Infaq</Link>
-              <Link to="/consultation" className="hover:text-white">Tanya Ustaz</Link>
+              <Link to="/profile" className="hover:text-gold-400 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gold-400 rounded-full"></span> Profil Masjid</Link>
+              <Link to="/donation" className="hover:text-gold-400 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gold-400 rounded-full"></span> Salurkan Infaq</Link>
+              <Link to="/consultation" className="hover:text-gold-400 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gold-400 rounded-full"></span> Tanya Ustaz</Link>
+              <Link to="/blog" className="hover:text-gold-400 transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gold-400 rounded-full"></span> Berita Terbaru</Link>
             </div>
           </div>
         </div>
-        <div className="text-center mt-10 pt-6 border-t border-emerald-800 text-xs opacity-60 flex justify-center items-center gap-2">
-          <span>© 2024 Masjid Al-Mustaqbal Digital System. All rights reserved.</span>
-          <span className="bg-emerald-800 px-2 py-0.5 rounded text-[10px]">v1.1</span>
+        <div className="text-center mt-12 pt-8 border-t border-emerald-800/50 text-xs opacity-60 flex justify-center items-center gap-2">
+          <span>© {new Date().getFullYear()} {MOSQUE_INFO.name}. All rights reserved.</span>
         </div>
       </footer>
     </div>
@@ -260,7 +291,6 @@ export default function App() {
     if (userData) {
         setUser(userData);
     } else {
-        // Fallback backward compatibility
         const name = role === UserRole.ADMIN ? 'Administrator' : 'Hamba Allah';
         setUser({ id: '1', name, role, email: `${role}@masjid.id` });
     }
