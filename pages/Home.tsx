@@ -57,7 +57,7 @@ export const Home: React.FC = () => {
             {MOSQUE_INFO.slogan}
           </h2>
 
-          <p className="text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 hidden md:block">
+          <p className="text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 hidden md:block whitespace-pre-wrap">
             {MOSQUE_INFO.description}
           </p>
           
