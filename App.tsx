@@ -279,6 +279,12 @@ export default function App() {
   const [user, setUser] = useState<User>({ id: 'guest', name: 'Tamu', role: UserRole.GUEST });
   const [isDark, setIsDark] = useState(false);
 
+  // --- DYNAMIC TITLE LOGIC ---
+  useEffect(() => {
+    // Mengubah judul tab browser sesuai config
+    document.title = MOSQUE_INFO.name;
+  }, []);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
