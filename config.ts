@@ -12,5 +12,10 @@ export const MOSQUE_INFO = {
         facebook: "Masjid Al Mustaqbal",
         instagram: "@almustaqbal.official",
         youtube: "Al-Mustaqbal TV"
+    },
+    images: {
+        hero: "https://picsum.photos/1920/1080?grayscale&blur=2", // Gambar besar di halaman Beranda
+        profile: "https://picsum.photos/800/600?grayscale", // Gambar di halaman Profil
+        qris: "https://picsum.photos/250/250?blur=10" // Gambar QR Code di halaman Donasi
     }
 };
