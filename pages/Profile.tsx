@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Users, History, Loader2 } from 'lucide-react';
+import { Award, Users, History, Loader2, CheckCircle2 } from 'lucide-react';
 import { MosqueProfileData, Staff } from '../types';
 import { api } from '../services/api';
 
@@ -27,6 +27,32 @@ export const Profile: React.FC = () => {
      );
   }
 
+  // Helper untuk mengubah string text menjadi list array
+  const renderMissionList = (text: string | undefined) => {
+      if (!text) return <p className="text-gray-500 italic">Data belum tersedia.</p>;
+
+      // Split berdasarkan baris baru, hapus baris kosong, dan hapus tanda dash/strip di awal
+      const items = text.split('\n')
+          .map(item => item.trim())
+          .filter(item => item.length > 0);
+
+      return (
+          <ul className="space-y-3">
+              {items.map((item, index) => {
+                  // Hapus tanda strip (-) atau bullet (•) di awal kalimat jika ada
+                  const cleanText = item.replace(/^[-*•]\s*/, '');
+                  
+                  return (
+                    <li key={index} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                        <CheckCircle2 size={20} className="text-gold-500 mt-0.5 flex-shrink-0" />
+                        <span className="leading-relaxed">{cleanText}</span>
+                    </li>
+                  );
+              })}
+          </ul>
+      );
+  };
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto space-y-12">
@@ -45,27 +71,29 @@ export const Profile: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
               <History className="text-gold-500" /> Sejarah Singkat
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-justify">
               {profile?.history}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border-t-4 border-emerald-500">
-                <h2 className="text-2xl font-bold mb-4 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border-t-4 border-emerald-500 flex flex-col">
+                <h2 className="text-2xl font-bold mb-6 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
                     <Award className="text-emerald-600" /> Visi
                 </h2>
-                <p className="text-gray-700 dark:text-gray-300 italic text-lg whitespace-pre-wrap">
-                    "{profile?.vision}"
-                </p>
+                <div className="flex-1 flex items-center">
+                    <p className="text-gray-700 dark:text-gray-300 italic text-lg leading-relaxed text-center w-full">
+                        "{profile?.vision}"
+                    </p>
+                </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border-t-4 border-gold-500">
-                <h2 className="text-2xl font-bold mb-4 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+                <h2 className="text-2xl font-bold mb-6 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
                     <Users className="text-gold-600" /> Misi
                 </h2>
-                <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                    {profile?.mission}
+                <div>
+                    {renderMissionList(profile?.mission)}
                 </div>
             </div>
         </div>
@@ -76,7 +104,7 @@ export const Profile: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
                 {staffList.map((staff, idx) => (
                     <div key={idx} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 overflow-hidden">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 overflow-hidden border-2 border-emerald-100 dark:border-emerald-800">
                             {staff.imageUrl ? (
                                 <img src={staff.imageUrl} alt={staff.name} className="w-full h-full object-cover" />
                             ) : (
