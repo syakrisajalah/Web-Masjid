@@ -37,7 +37,7 @@ export const Home: React.FC = () => {
       <section className="relative min-h-[550px] flex items-center justify-center text-center px-4">
         <div className="absolute inset-0 bg-emerald-900 overflow-hidden">
           <img 
-            src="https://picsum.photos/1920/1080?grayscale&blur=2" 
+            src={MOSQUE_INFO.images.hero} 
             alt="Mosque Interior" 
             className="w-full h-full object-cover opacity-30"
           />
