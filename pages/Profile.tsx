@@ -31,16 +31,19 @@ export const Profile: React.FC = () => {
   const renderMissionList = (text: string | undefined) => {
       if (!text) return <p className="text-gray-500 italic">Data belum tersedia.</p>;
 
-      // Split berdasarkan baris baru, hapus baris kosong, dan hapus tanda dash/strip di awal
-      const items = text.split('\n')
+      // Split menggunakan Regex untuk menangani:
+      // 1. \n (Newline standar)
+      // 2. \r\n (Windows newline)
+      // 3. \\n (Literal string '\n' jika user mengetik manual di DB)
+      const items = text.split(/\r?\n|\\n/g)
           .map(item => item.trim())
           .filter(item => item.length > 0);
 
       return (
           <ul className="space-y-3">
               {items.map((item, index) => {
-                  // Hapus tanda strip (-) atau bullet (•) di awal kalimat jika ada
-                  const cleanText = item.replace(/^[-*•]\s*/, '');
+                  // Hapus tanda strip (-) atau bullet (•) atau angka (1.) di awal kalimat jika ada
+                  const cleanText = item.replace(/^[-*•\d.]\s*/, '');
                   
                   return (
                     <li key={index} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
