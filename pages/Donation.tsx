@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Copy, CheckCircle, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 import { BankAccount } from '../types';
+import { MOSQUE_INFO } from '../config';
 
 export const Donation: React.FC = () => {
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -36,11 +37,11 @@ export const Donation: React.FC = () => {
           <div className="p-8 bg-emerald-600 text-white text-center">
             <p className="text-sm opacity-90 mb-2">Scan QRIS (Mendukung GoPay, OVO, Dana, LinkAja, BCA Mobile, dll)</p>
             <div className="bg-white p-4 inline-block rounded-xl shadow-lg">
-                {/* Placeholder for QRIS - in real implementation this could also be dynamic from API */}
-               <img src="https://picsum.photos/250/250?blur=10" alt="QRIS Code" className="w-48 h-48 object-cover" />
+                {/* QRIS Image from Config */}
+               <img src={MOSQUE_INFO.images.qris} alt="QRIS Code" className="w-48 h-48 object-cover" />
                <div className="text-black font-bold text-xl mt-2">QRIS</div>
             </div>
-            <p className="mt-4 font-semibold">a.n Masjid Al-Mustaqbal</p>
+            <p className="mt-4 font-semibold">a.n {MOSQUE_INFO.name}</p>
           </div>
 
           <div className="p-8 space-y-6">
@@ -71,7 +72,7 @@ export const Donation: React.FC = () => {
 
             <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
                 <p className="font-bold mb-1">Konfirmasi Donasi</p>
-                <p>Setelah melakukan transfer, mohon konfirmasi ke WhatsApp Admin: <span className="font-mono font-bold">+62 812-3456-7890</span> agar dapat kami catat dalam laporan keuangan.</p>
+                <p>Setelah melakukan transfer, mohon konfirmasi ke WhatsApp Admin: <span className="font-mono font-bold">{MOSQUE_INFO.contact.phone}</span> agar dapat kami catat dalam laporan keuangan.</p>
             </div>
           </div>
         </div>
