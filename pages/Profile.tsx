@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Award, Users, History, Loader2, CheckCircle2 } from 'lucide-react';
 import { MosqueProfileData, Staff } from '../types';
 import { api } from '../services/api';
+import { MOSQUE_INFO } from '../config';
 
 export const Profile: React.FC = () => {
   const [profile, setProfile] = useState<MosqueProfileData | null>(null);
@@ -66,7 +67,7 @@ export const Profile: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <img 
-            src="https://picsum.photos/800/600?grayscale" 
+            src={MOSQUE_INFO.images.profile}
             alt="Mosque Building" 
             className="rounded-2xl shadow-xl w-full h-[300px] object-cover"
           />
