@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, ChevronRight, Loader2 } from 'lucide-react';
+import { Clock, Calendar, ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PrayerTime, ProgramService } from '../types';
 import { api } from '../services/api';
+import { MOSQUE_INFO } from '../config';
 
 export const Home: React.FC = () => {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
@@ -33,31 +34,43 @@ export const Home: React.FC = () => {
   return (
     <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <section className="relative h-[500px] flex items-center justify-center text-center px-4">
+      <section className="relative min-h-[550px] flex items-center justify-center text-center px-4">
         <div className="absolute inset-0 bg-emerald-900 overflow-hidden">
           <img 
             src="https://picsum.photos/1920/1080?grayscale&blur=2" 
             alt="Mosque Interior" 
             className="w-full h-full object-cover opacity-30"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/90 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-900 to-transparent"></div>
         </div>
         
-        <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-gold-500/20 text-gold-400 text-sm font-semibold border border-gold-500/30 backdrop-blur-sm">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6 pt-10">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-gold-500/20 text-gold-400 text-sm font-semibold border border-gold-500/30 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
             Selamat Datang di Portal Digital
           </span>
-          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
-            Masjid Al-Mustaqbal
+          
+          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+            {MOSQUE_INFO.name}
           </h1>
-          <p className="text-lg md:text-xl text-emerald-100/90 font-light">
-            "Hanyalah yang memakmurkan masjid-masjid Allah ialah orang-orang yang beriman kepada Allah dan hari kemudian."
+          
+          <h2 className="text-xl md:text-2xl text-gold-400 font-medium animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+            {MOSQUE_INFO.slogan}
+          </h2>
+
+          <p className="text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 hidden md:block">
+            {MOSQUE_INFO.description}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link to="/donation" className="px-8 py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-gold-500/30">
+          
+          <div className="flex items-center justify-center gap-2 text-emerald-200 text-sm animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+             <MapPin size={16} />
+             <span>{MOSQUE_INFO.address}</span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+            <Link to="/donation" className="px-8 py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-gold-500/30 transform hover:-translate-y-1">
               Infaq Sekarang
             </Link>
-            <Link to="/consultation" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg backdrop-blur-sm transition-all border border-white/30">
+            <Link to="/consultation" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg backdrop-blur-sm transition-all border border-white/30 transform hover:-translate-y-1">
               Tanya Ustaz AI
             </Link>
           </div>
@@ -65,7 +78,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Prayer Times Widget */}
-      <div className="container mx-auto px-4 -mt-20 relative z-20">
+      <div className="container mx-auto px-4 -mt-24 relative z-20">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 dark:border-gray-700 min-h-[160px]">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <div className="text-center md:text-left mb-4 md:mb-0">
@@ -124,9 +137,9 @@ export const Home: React.FC = () => {
       <section className="bg-emerald-50 dark:bg-emerald-900/20 py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl md:text-3xl font-serif italic text-emerald-800 dark:text-emerald-300 mb-8 max-w-4xl mx-auto">
-            "Siapa yang membangun masjid karena Allah, maka Allah akan membangunkan baginya semisal itu di surga."
+            "Hanyalah yang memakmurkan masjid-masjid Allah ialah orang-orang yang beriman kepada Allah dan hari kemudian."
           </h2>
-          <p className="text-emerald-600 dark:text-emerald-400 mb-8 font-medium">— HR. Bukhari & Muslim</p>
+          <p className="text-emerald-600 dark:text-emerald-400 mb-8 font-medium">— At-Taubah: 18</p>
           <Link to="/donation" className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold hover:underline">
             Ikut Berdonasi <ChevronRight size={18} />
           </Link>
