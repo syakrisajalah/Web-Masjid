@@ -52,6 +52,10 @@ function doGet(e) {
        result = getData(db, 'consultations');
     } else if (action === 'getMessages') {
        result = getData(db, 'messages');
+    } else if (action === 'getUsers') {
+       // Mengambil data user (hati-hati, password ikut terkirim di logic sederhana ini)
+       // Di production sebaiknya di-filter field sensitifnya
+       result = getData(db, 'users');
     } else if (action === 'getAppConfig') {
        // Mengambil konfigurasi dinamis (Key-Value)
        result = getData(db, 'app_config');

@@ -110,6 +110,12 @@ let MOCK_MESSAGES: InboxMessage[] = [
     }
 ];
 
+let MOCK_USERS: User[] = [
+    { id: '1', name: 'Admin', role: UserRole.ADMIN, email: 'admin@masjid.id' },
+    { id: '2', name: 'Budi', role: UserRole.JAMAAH, email: 'budi@gmail.com' },
+    { id: '3', name: 'Siti', role: UserRole.JAMAAH, email: 'siti@gmail.com' },
+];
+
 // Mutable mock data for consultations to persist during session
 let MOCK_CONSULTATIONS: ConsultationItem[] = [
     {
@@ -311,6 +317,11 @@ export const api = {
         }));
     }
     return MOCK_GALLERY;
+  },
+
+  getUsers: async (): Promise<User[]> => {
+      const data = await fetchData('getUsers');
+      return Array.isArray(data) ? data : MOCK_USERS;
   },
 
   // --- MESSAGES API ---

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info, Loader2 } from 'lucide-react';
 import { api, getScriptUrl, setScriptUrl } from '../services/api';
 import { useMosqueInfo } from '../contexts';
-import { InboxMessage } from '../types';
+import { InboxMessage, UserRole } from '../types';
 
 export const AdminDashboard: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -13,6 +13,14 @@ export const AdminDashboard: React.FC = () => {
   const [connectionSource, setConnectionSource] = useState<'env' | 'manual' | 'none'>('none');
   const mosqueInfo = useMosqueInfo();
   
+  // Stats State
+  const [stats, setStats] = useState({
+      users: '...',
+      posts: '...',
+      donations: '...',
+      announcements: '...'
+  });
+
   // Messages State
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -40,18 +48,64 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [scriptUrl]);
 
-  // Load Messages
-  const loadMessages = async () => {
+  // Load Data
+  const loadData = async () => {
       setLoadingMessages(true);
-      const data = await api.getMessages();
-      // Sort by date descending (newest first)
-      const sorted = data.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setMessages(sorted);
+      
+      const [msgData, usersData, postsData, financeData] = await Promise.all([
+          api.getMessages(),
+          api.getUsers(),
+          api.getPosts(),
+          api.getTransactions()
+      ]);
+
+      // Process Messages
+      const sortedMsgs = msgData.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setMessages(sortedMsgs);
+
+      // Process Stats
+      // 1. Users: Count 'jamaah' role only
+      const jamaahCount = usersData.filter(u => u.role === UserRole.JAMAAH).length;
+
+      // 2. Posts: Count all
+      const postsCount = postsData.length;
+
+      // 3. Announcements: Filter by category 'Pengumuman'
+      const announcementCount = postsData.filter(p => p.category === 'Pengumuman').length;
+
+      // 4. Donations This Month
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      const monthlyDonation = financeData
+        .filter(t => {
+            const tDate = new Date(t.date);
+            return t.type === 'income' && 
+                   tDate.getMonth() === currentMonth && 
+                   tDate.getFullYear() === currentYear;
+        })
+        .reduce((acc, curr) => acc + curr.amount, 0);
+
+      // Format Currency
+      const formattedDonation = new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+          maximumFractionDigits: 0
+      }).format(monthlyDonation);
+
+      setStats({
+          users: jamaahCount.toString(),
+          posts: postsCount.toString(),
+          donations: formattedDonation,
+          announcements: announcementCount.toString()
+      });
+
       setLoadingMessages(false);
   };
 
   useEffect(() => {
-      loadMessages();
+      loadData();
   }, []);
 
   const handleSaveSettings = () => {
@@ -216,10 +270,10 @@ export const AdminDashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
         {[
-          { label: 'Jamaah Terdaftar', val: '1,204', icon: <Users size={24} />, color: 'bg-blue-500' },
-          { label: 'Total Artikel', val: '45', icon: <FilePlus size={24} />, color: 'bg-green-500' },
-          { label: 'Donasi Bulan Ini', val: 'Rp 12.5jt', icon: <DollarSign size={24} />, color: 'bg-yellow-500' },
-          { label: 'Pengumuman Aktif', val: '3', icon: <Bell size={24} />, color: 'bg-red-500' },
+          { label: 'Jamaah Terdaftar', val: stats.users, icon: <Users size={24} />, color: 'bg-blue-500' },
+          { label: 'Total Artikel', val: stats.posts, icon: <FilePlus size={24} />, color: 'bg-green-500' },
+          { label: 'Donasi Bulan Ini', val: stats.donations, icon: <DollarSign size={24} />, color: 'bg-yellow-500' },
+          { label: 'Pengumuman Aktif', val: stats.announcements, icon: <Bell size={24} />, color: 'bg-red-500' },
         ].map((stat, idx) => (
           <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4">
             <div className={`${stat.color} text-white p-3 rounded-lg`}>
@@ -256,7 +310,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px]">
           <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
              <h3 className="text-lg font-bold text-gray-800 dark:text-white">Pesan Masuk</h3>
-             <button onClick={loadMessages} disabled={loadingMessages} className="text-emerald-600 hover:text-emerald-700">
+             <button onClick={loadData} disabled={loadingMessages} className="text-emerald-600 hover:text-emerald-700">
                 {loadingMessages ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
              </button>
           </div>
