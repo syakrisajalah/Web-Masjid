@@ -1,6 +1,6 @@
-import React, { useState, createContext, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
-import { User, UserRole } from './types';
+import { User, UserRole, MosqueGeneralInfo } from './types';
 import { Home } from './pages/Home';
 import { Consultation } from './pages/Consultation';
 import { Profile } from './pages/Profile';
@@ -12,42 +12,16 @@ import { BlogDetail } from './pages/BlogDetail';
 import { FinancialReport } from './pages/FinancialReport';
 import { Login } from './pages/Login';
 import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn, MapPin, Phone, Mail } from 'lucide-react';
-import { setScriptUrl } from './services/api';
-import { MOSQUE_INFO } from './config';
-
-// Contexts
-interface AuthContextType {
-  user: User;
-  login: (role: UserRole, userData?: User) => void; 
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
-
-interface ThemeContextType {
-  isDark: boolean;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
-  return context;
-};
+import { setScriptUrl, api } from './services/api';
+import { DEFAULT_MOSQUE_INFO } from './config';
+import { AuthContext, ThemeContext, MosqueContext, useAuth, useTheme, useMosqueInfo } from './contexts';
 
 // Components
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const mosqueInfo = useMosqueInfo(); // Use dynamic data
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -92,7 +66,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Menu size={24} />
             </button>
             <Link to="/" className="text-xl md:text-2xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2 truncate max-w-[200px] md:max-w-none">
-              <span>🕌</span> <span className="hidden sm:inline">{MOSQUE_INFO.name}</span>
+              <span>🕌</span> <span className="hidden sm:inline">{mosqueInfo.name}</span>
               <span className="sm:hidden">Al-Mustaqbal</span>
             </Link>
           </div>
@@ -234,10 +208,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                 <span>🕌</span> {MOSQUE_INFO.name}
+                 <span>🕌</span> {mosqueInfo.name}
             </h3>
             <p className="text-sm opacity-80 leading-relaxed max-w-xs">
-              {MOSQUE_INFO.slogan}
+              {mosqueInfo.slogan}
             </p>
           </div>
           <div>
@@ -245,15 +219,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div className="space-y-3 text-sm opacity-90">
                 <p className="flex items-start gap-3">
                     <MapPin size={18} className="mt-1 flex-shrink-0 text-gold-400" />
-                    <span>{MOSQUE_INFO.address}</span>
+                    <span>{mosqueInfo.address}</span>
                 </p>
                 <p className="flex items-center gap-3">
                     <Phone size={18} className="text-gold-400" />
-                    <span>{MOSQUE_INFO.contact.phone}</span>
+                    <span>{mosqueInfo.contact.phone}</span>
                 </p>
                 <p className="flex items-center gap-3">
                     <Mail size={18} className="text-gold-400" />
-                    <span>{MOSQUE_INFO.contact.email}</span>
+                    <span>{mosqueInfo.contact.email}</span>
                 </p>
             </div>
           </div>
@@ -268,7 +242,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
         <div className="text-center mt-12 pt-8 border-t border-emerald-800/50 text-xs opacity-60 flex justify-center items-center gap-2">
-          <span>© {new Date().getFullYear()} {MOSQUE_INFO.name}. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {mosqueInfo.name}. All rights reserved.</span>
         </div>
       </footer>
     </div>
@@ -278,11 +252,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export default function App() {
   const [user, setUser] = useState<User>({ id: 'guest', name: 'Tamu', role: UserRole.GUEST });
   const [isDark, setIsDark] = useState(false);
+  const [mosqueInfo, setMosqueInfo] = useState<MosqueGeneralInfo>(DEFAULT_MOSQUE_INFO);
 
-  // --- DYNAMIC TITLE LOGIC ---
+  // --- DYNAMIC TITLE & CONFIG LOGIC ---
+  const refreshInfo = async () => {
+      const data = await api.getAppConfig();
+      setMosqueInfo(data);
+      document.title = data.name;
+  };
+
   useEffect(() => {
-    // Mengubah judul tab browser sesuai config
-    document.title = MOSQUE_INFO.name;
+    refreshInfo();
   }, []);
 
   useEffect(() => {
@@ -309,24 +289,26 @@ export default function App() {
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme: () => setIsDark(!isDark) }}>
       <AuthContext.Provider value={{ user, login, logout }}>
-        <HashRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/donation" element={<Donation />} />
-              <Route path="/consultation" element={<Consultation />} />
-              <Route path="/blog" element={<BlogList />} />
-              <Route path="/blog/:id" element={<BlogDetail />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/finance" element={<FinancialReport />} />
-              <Route path="/admin" element={
-                user.role === UserRole.ADMIN ? <AdminDashboard /> : <Navigate to="/" />
-              } />
-            </Routes>
-          </Layout>
-        </HashRouter>
+        <MosqueContext.Provider value={{ info: mosqueInfo, refreshInfo }}>
+            <HashRouter>
+            <Layout>
+                <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/donation" element={<Donation />} />
+                <Route path="/consultation" element={<Consultation />} />
+                <Route path="/blog" element={<BlogList />} />
+                <Route path="/blog/:id" element={<BlogDetail />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/finance" element={<FinancialReport />} />
+                <Route path="/admin" element={
+                    user.role === UserRole.ADMIN ? <AdminDashboard /> : <Navigate to="/" />
+                } />
+                </Routes>
+            </Layout>
+            </HashRouter>
+        </MosqueContext.Provider>
       </AuthContext.Provider>
     </ThemeContext.Provider>
   );
