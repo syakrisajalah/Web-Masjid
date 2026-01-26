@@ -150,6 +150,21 @@ const fetchData = async (action: string, params: string = '') => {
   }
 };
 
+const postData = async (payload: any) => {
+    const url = getScriptUrl();
+    if (!url) return null; // Indicator for Mock Mode
+
+    const response = await fetch(url, {
+        method: 'POST',
+        // IMPORTANT: Use text/plain to avoid CORS preflight (OPTIONS) requests which GAS handles poorly
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) throw new Error("Server error");
+    return await response.json();
+};
+
 // Fungsi helper untuk mengambil jadwal shalat Realtime (API Aladhan)
 const fetchRealtimePrayerTimes = async (): Promise<PrayerTime[] | null> => {
     try {
@@ -305,25 +320,20 @@ export const api = {
   },
 
   sendMessage: async (name: string, email: string, message: string): Promise<{success: boolean}> => {
-      const url = getScriptUrl();
-      if (!url) {
-          // Mock sending
-          const newMessage: InboxMessage = {
-              id: Date.now().toString(),
-              name, email, message,
-              date: new Date().toISOString(),
-              isRead: false
-          };
-          MOCK_MESSAGES = [newMessage, ...MOCK_MESSAGES];
-          return { success: true };
-      }
-
       try {
-          await fetch(url, {
-              method: 'POST',
-              body: JSON.stringify({ action: 'sendMessage', name, email, message }),
-          });
-          return { success: true };
+          const result = await postData({ action: 'sendMessage', name, email, message });
+          if (!result) {
+              // Mock Mode
+              const newMessage: InboxMessage = {
+                  id: Date.now().toString(),
+                  name, email, message,
+                  date: new Date().toISOString(),
+                  isRead: false
+              };
+              MOCK_MESSAGES = [newMessage, ...MOCK_MESSAGES];
+              return { success: true };
+          }
+          return result;
       } catch (e) {
           console.error(e);
           return { success: false };
@@ -337,66 +347,53 @@ export const api = {
   },
 
   submitConsultation: async (userId: string, userName: string, question: string): Promise<{success: boolean, message?: string}> => {
-    const url = getScriptUrl();
-    if (!url) {
-        // Mock Submit
-        const newItem: ConsultationItem = {
-            id: Date.now().toString(),
-            userId, userName, question,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-        MOCK_CONSULTATIONS = [newItem, ...MOCK_CONSULTATIONS];
-        return { success: true };
-    }
-
     try {
-        await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'submitConsultation', userId, userName, question }),
-        });
-        return { success: true };
+        const result = await postData({ action: 'submitConsultation', userId, userName, question });
+        if (!result) {
+             // Mock Mode
+            const newItem: ConsultationItem = {
+                id: Date.now().toString(),
+                userId, userName, question,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            MOCK_CONSULTATIONS = [newItem, ...MOCK_CONSULTATIONS];
+            return { success: true };
+        }
+        return result;
     } catch(e) { return { success: false, message: 'Gagal kirim' }; }
   },
 
   answerConsultation: async (id: string, answer: string, answeredBy: string): Promise<{success: boolean, message?: string}> => {
-    const url = getScriptUrl();
-    if (!url) {
-        // Mock Answer
-        MOCK_CONSULTATIONS = MOCK_CONSULTATIONS.map(c => 
-            c.id === id ? { ...c, answer, answeredBy, status: 'answered', answeredAt: new Date().toISOString() } : c
-        );
-        return { success: true };
-    }
-
     try {
-        await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'answerConsultation', id, answer, answeredBy }),
-        });
-        return { success: true };
+        const result = await postData({ action: 'answerConsultation', id, answer, answeredBy });
+        if (!result) {
+             // Mock Mode
+            MOCK_CONSULTATIONS = MOCK_CONSULTATIONS.map(c => 
+                c.id === id ? { ...c, answer, answeredBy, status: 'answered', answeredAt: new Date().toISOString() } : c
+            );
+            return { success: true };
+        }
+        return result;
     } catch(e) { return { success: false, message: 'Gagal kirim jawaban' }; }
   },
 
   login: async (email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> => {
-    const url = getScriptUrl();
-    if (!url) {
-      await new Promise(r => setTimeout(r, 800));
-      if (email === 'admin@masjid.id' && password === 'admin123') {
-        return { success: true, user: { id: '1', name: 'Administrator', role: UserRole.ADMIN, email, isUstadz: false } };
-      } else if (email === 'jamaah@masjid.id' && password === 'jamaah123') {
-        return { success: true, user: { id: '2', name: 'Hamba Allah', role: UserRole.JAMAAH, email, isUstadz: false } };
-      } else if (email === 'ustadz@masjid.id' && password === 'ustadz123') {
-        return { success: true, user: { id: '3', name: 'Ust. Abdullah', role: UserRole.JAMAAH, email, isUstadz: true } };
-      }
-      return { success: false, message: 'Email atau password salah (Mode Demo)' };
-    }
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'login', email, password }),
-      });
-      return await response.json();
+      const result = await postData({ action: 'login', email, password });
+      if (!result) {
+          // Mock Mode
+          await new Promise(r => setTimeout(r, 800));
+          if (email === 'admin@masjid.id' && password === 'admin123') {
+            return { success: true, user: { id: '1', name: 'Administrator', role: UserRole.ADMIN, email, isUstadz: false } };
+          } else if (email === 'jamaah@masjid.id' && password === 'jamaah123') {
+            return { success: true, user: { id: '2', name: 'Hamba Allah', role: UserRole.JAMAAH, email, isUstadz: false } };
+          } else if (email === 'ustadz@masjid.id' && password === 'ustadz123') {
+            return { success: true, user: { id: '3', name: 'Ust. Abdullah', role: UserRole.JAMAAH, email, isUstadz: true } };
+          }
+          return { success: false, message: 'Email atau password salah (Mode Demo)' };
+      }
+      return result;
     } catch (error) {
       return { success: false, message: 'Gagal terhubung ke server database.' };
     }
