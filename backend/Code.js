@@ -14,6 +14,7 @@
  * 8. Sheet 'staff': name, role, imageUrl
  * 9. Sheet 'bank_accounts': bankName, accountNumber, holderName
  * 10. Sheet 'consultations': id, userId, userName, question, answer, answeredBy, status, createdAt, answeredAt
+ * 11. Sheet 'app_config': key, value (Contoh key: name, slogan, address, phone, hero_image, dll)
  * 
  * CARA DEPLOY (Update):
  * 1. Klik tombol "Deploy" > "Manage deployments"
@@ -48,6 +49,9 @@ function doGet(e) {
       result = getData(db, 'bank_accounts');
     } else if (action === 'getConsultations') {
        result = getData(db, 'consultations');
+    } else if (action === 'getAppConfig') {
+       // Mengambil konfigurasi dinamis (Key-Value)
+       result = getData(db, 'app_config');
     } else if (action === 'getPostById') {
         const id = e.parameter.id;
         const posts = getData(db, 'posts');

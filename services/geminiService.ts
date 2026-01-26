@@ -1,51 +1,23 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Lazy initialization to prevent runtime crash
-let aiInstance: GoogleGenAI | null = null;
+// Ensure API Key exists
+const apiKey = process.env.API_KEY;
 
-const getAI = () => {
-  if (!aiInstance) {
-    let key = '';
-    
-    // 1. Coba ambil dari Vite Environment (Standar Hosting Modern/Vercel)
-    try {
-       // @ts-ignore
-       if (typeof import.meta !== 'undefined' && import.meta.env) {
-          // @ts-ignore
-          key = import.meta.env.VITE_API_KEY || '';
-       }
-    } catch (e) { /* Ignore if not in Vite */ }
-
-    // 2. Coba ambil dari Process Env (Node.js / AI Studio) jika belum ada
-    if (!key) {
-        try {
-            if (typeof process !== 'undefined' && process && process.env) {
-                // @ts-ignore
-                key = process.env.API_KEY || '';
-            }
-        } catch (e) { /* Ignore */ }
-    }
-    
-    // Fallback if no key is found
-    if (!key) {
-        console.warn("API Key not found. AI features will be disabled.");
-        return null;
-    }
-
-    aiInstance = new GoogleGenAI({ apiKey: key });
-  }
-  return aiInstance;
-};
+// Initialize AI Instance
+// Note: If apiKey is missing, this might throw an error or fail silently depending on usage.
+// The UI should handle cases where the AI service fails.
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const createConsultationSession = () => {
-  const ai = getAI();
   if (!ai) {
-      // Return dummy object to prevent crash, UI handles errors separately
+      console.error("API Key is missing via process.env.API_KEY");
+      // Return a dummy object that throws a clear error when used
       return {
-          sendMessageStream: async () => { throw new Error("API Key Missing"); }
+          sendMessageStream: async () => { throw new Error("API Key configuration is missing. Please check your .env or Vercel settings."); }
       };
   }
 
+  // Menggunakan model 'gemini-3-flash-preview' sesuai panduan untuk Basic Text Tasks
   return ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
@@ -59,7 +31,9 @@ export const createConsultationSession = () => {
 
 export const sendMessageToUstaz = async (chatSession: any, message: string) => {
   try {
-    if (!chatSession) throw new Error("No chat session");
+    if (!chatSession) throw new Error("No chat session initialized");
+    
+    // Using sendMessageStream directly based on session object from @google/genai
     const response = await chatSession.sendMessageStream({ message });
     return response;
   } catch (error) {
