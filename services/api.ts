@@ -1,4 +1,5 @@
-import { User, Post, Transaction, PrayerTime, MediaItem, UserRole, ProgramService, MosqueProfileData, Staff, BankAccount, ConsultationItem } from '../types';
+import { User, Post, Transaction, PrayerTime, MediaItem, UserRole, ProgramService, MosqueProfileData, Staff, BankAccount, ConsultationItem, MosqueGeneralInfo } from '../types';
+import { DEFAULT_MOSQUE_INFO } from '../config';
 
 const SCRIPT_URL_KEY = 'masjid_app_script_url';
 const ENV_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
@@ -17,12 +18,12 @@ export const setScriptUrl = (url: string) => localStorage.setItem(SCRIPT_URL_KEY
 // --- MOCK DATA ---
 
 const MOCK_PRAYER_TIMES: PrayerTime[] = [
-  { name: 'Subuh', time: '04:35' },
-  { name: 'Terbit', time: '05:50' },
-  { name: 'Dzuhur', time: '11:58' },
-  { name: 'Ashar', time: '15:15' },
-  { name: 'Maghrib', time: '17:59' },
-  { name: 'Isya', time: '19:10' },
+  { name: 'Subuh', time: '04:40' },
+  { name: 'Terbit', time: '06:00' },
+  { name: 'Dzuhur', time: '12:05' },
+  { name: 'Ashar', time: '15:20' },
+  { name: 'Maghrib', time: '18:10' },
+  { name: 'Isya', time: '19:20' },
 ];
 
 const MOCK_PROGRAMS: ProgramService[] = [
@@ -127,10 +128,97 @@ const fetchData = async (action: string, params: string = '') => {
   }
 };
 
+// Fungsi helper untuk mengambil jadwal shalat Realtime (API Aladhan)
+const fetchRealtimePrayerTimes = async (): Promise<PrayerTime[] | null> => {
+    try {
+        // Menggunakan API Aladhan (Gratis & Stabil)
+        // Lokasi: Makassar (WITA)
+        // Method 20: Kemenag RI
+        const today = new Date();
+        const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+        
+        // Timeout 3 detik agar tidak blocking jika internet lambat
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const response = await fetch(
+            `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=Makassar&country=Indonesia&method=20`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error("External API Failed");
+        
+        const data = await response.json();
+        const t = data.data.timings;
+
+        return [
+            { name: 'Subuh', time: t.Fajr },
+            { name: 'Terbit', time: t.Sunrise }, // Shuruq
+            { name: 'Dzuhur', time: t.Dhuhr },
+            { name: 'Ashar', time: t.Asr },
+            { name: 'Maghrib', time: t.Maghrib },
+            { name: 'Isya', time: t.Isha },
+        ];
+    } catch (error) {
+        console.warn("Gagal mengambil jadwal shalat realtime, mencoba database...", error);
+        return null;
+    }
+};
+
 export const api = {
+  getAppConfig: async (): Promise<MosqueGeneralInfo> => {
+      const data = await fetchData('getAppConfig');
+      // Merge with default to ensure no null pointer exceptions
+      let config = { ...DEFAULT_MOSQUE_INFO };
+
+      if (Array.isArray(data)) {
+          // Convert Array of Key-Value [{key: 'name', value: 'X'}] to Object
+          const configMap: any = {};
+          data.forEach((item: any) => {
+              if (item.key && item.value) {
+                  configMap[item.key] = item.value;
+              }
+          });
+
+          // Map to structure
+          if (configMap.name) config.name = configMap.name;
+          if (configMap.slogan) config.slogan = configMap.slogan;
+          if (configMap.description) config.description = configMap.description;
+          if (configMap.address) config.address = configMap.address;
+          
+          if (configMap.phone) config.contact.phone = configMap.phone;
+          if (configMap.email) config.contact.email = configMap.email;
+          if (configMap.whatsapp) config.contact.whatsapp = configMap.whatsapp;
+
+          if (configMap.hero_image) config.images.hero = configMap.hero_image;
+          if (configMap.profile_image) config.images.profile = configMap.profile_image;
+          if (configMap.qris_image) config.images.qris = configMap.qris_image;
+          
+          if (configMap.facebook) config.social.facebook = configMap.facebook;
+          if (configMap.instagram) config.social.instagram = configMap.instagram;
+          if (configMap.youtube) config.social.youtube = configMap.youtube;
+      }
+      
+      return config;
+  },
+
   getPrayerTimes: async (): Promise<PrayerTime[]> => {
+    // STRATEGI:
+    // 1. Coba ambil dari Internet (API Aladhan - Kemenag RI)
+    const realtimeData = await fetchRealtimePrayerTimes();
+    if (realtimeData) {
+        return realtimeData;
+    }
+
+    // 2. Jika offline/gagal, ambil dari Google Sheet Database
     const data = await fetchData('getPrayerTimes');
-    return Array.isArray(data) ? data : MOCK_PRAYER_TIMES;
+    if (Array.isArray(data) && data.length > 0) {
+        return data;
+    }
+
+    // 3. Fallback terakhir: Mock Data
+    return MOCK_PRAYER_TIMES;
   },
 
   getPrograms: async (): Promise<ProgramService[]> => {
