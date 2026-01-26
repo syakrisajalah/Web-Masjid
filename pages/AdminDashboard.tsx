@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info, Loader2 } from 'lucide-react';
+import { Settings, FilePlus, Users, DollarSign, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info, Loader2, Mail, Image, MessageSquare } from 'lucide-react';
 import { api, getScriptUrl, setScriptUrl } from '../services/api';
 import { useMosqueInfo } from '../contexts';
 import { InboxMessage, UserRole } from '../types';
@@ -18,7 +18,9 @@ export const AdminDashboard: React.FC = () => {
       users: '...',
       posts: '...',
       donations: '...',
-      announcements: '...'
+      messages: '...',
+      gallery: '...',
+      consultations: '...'
   });
 
   // Messages State
@@ -52,11 +54,13 @@ export const AdminDashboard: React.FC = () => {
   const loadData = async () => {
       setLoadingMessages(true);
       
-      const [msgData, usersData, postsData, financeData] = await Promise.all([
+      const [msgData, usersData, postsData, financeData, galleryData, consultData] = await Promise.all([
           api.getMessages(),
           api.getUsers(),
           api.getPosts(),
-          api.getTransactions()
+          api.getTransactions(),
+          api.getGallery(),
+          api.getConsultations()
       ]);
 
       // Process Messages
@@ -70,10 +74,7 @@ export const AdminDashboard: React.FC = () => {
       // 2. Posts: Count all
       const postsCount = postsData.length;
 
-      // 3. Announcements: Filter by category 'Pengumuman'
-      const announcementCount = postsData.filter(p => p.category === 'Pengumuman').length;
-
-      // 4. Donations This Month
+      // 3. Donations This Month
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
@@ -98,7 +99,9 @@ export const AdminDashboard: React.FC = () => {
           users: jamaahCount.toString(),
           posts: postsCount.toString(),
           donations: formattedDonation,
-          announcements: announcementCount.toString()
+          messages: msgData.length.toString(),
+          gallery: galleryData.length.toString(),
+          consultations: consultData.length.toString()
       });
 
       setLoadingMessages(false);
@@ -268,15 +271,17 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {[
           { label: 'Jamaah Terdaftar', val: stats.users, icon: <Users size={24} />, color: 'bg-blue-500' },
-          { label: 'Total Artikel', val: stats.posts, icon: <FilePlus size={24} />, color: 'bg-green-500' },
           { label: 'Donasi Bulan Ini', val: stats.donations, icon: <DollarSign size={24} />, color: 'bg-yellow-500' },
-          { label: 'Pengumuman Aktif', val: stats.announcements, icon: <Bell size={24} />, color: 'bg-red-500' },
+          { label: 'Total Pesan Masuk', val: stats.messages, icon: <Mail size={24} />, color: 'bg-indigo-500' },
+          { label: 'Total Artikel', val: stats.posts, icon: <FilePlus size={24} />, color: 'bg-green-500' },
+          { label: 'Foto & Video', val: stats.gallery, icon: <Image size={24} />, color: 'bg-purple-500' },
+          { label: 'Tanya Ustadz', val: stats.consultations, icon: <MessageSquare size={24} />, color: 'bg-pink-500' },
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4">
-            <div className={`${stat.color} text-white p-3 rounded-lg`}>
+          <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700">
+            <div className={`${stat.color} text-white p-3 rounded-lg shadow-sm`}>
               {stat.icon}
             </div>
             <div>
@@ -287,65 +292,61 @@ export const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Quick Actions & Inbox */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Kelola Konten</h3>
-          <div className="space-y-3">
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex justify-between items-center">
-              <span>Tulis Artikel Baru</span>
-              <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Buat</span>
+      {/* Inbox Full Width */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col min-h-[500px]">
+        <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+            <div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <Mail className="text-emerald-600" /> Pesan Masuk
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">Daftar pesan dari jamaah yang tersimpan di database.</p>
+            </div>
+            <button onClick={loadData} disabled={loadingMessages} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                {loadingMessages ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                <span className="text-sm">Refresh</span>
             </button>
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex justify-between items-center">
-              <span>Update Jadwal Shalat</span>
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Edit</span>
-            </button>
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex justify-between items-center">
-              <span>Upload Foto Galeri</span>
-              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Upload</span>
-            </button>
-          </div>
         </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px]">
-          <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
-             <h3 className="text-lg font-bold text-gray-800 dark:text-white">Pesan Masuk</h3>
-             <button onClick={loadData} disabled={loadingMessages} className="text-emerald-600 hover:text-emerald-700">
-                {loadingMessages ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
-             </button>
-          </div>
-          
-          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+        
+        <div className="flex-1 overflow-y-auto pr-2">
             {loadingMessages ? (
-                <div className="flex justify-center items-center h-full">
+                <div className="flex justify-center items-center h-40">
                     <Loader2 className="animate-spin text-emerald-600" size={32} />
                 </div>
             ) : messages.length === 0 ? (
-                <div className="text-center text-gray-400 py-10">Belum ada pesan masuk.</div>
-            ) : (
-                messages.map((msg) => (
-                <div key={msg.id} className="flex gap-3 pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold text-white ${msg.isRead ? 'bg-gray-400' : 'bg-emerald-500'}`}>
-                        {msg.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                        <p className={`text-sm ${msg.isRead ? 'font-medium text-gray-600 dark:text-gray-300' : 'font-bold text-gray-800 dark:text-white'}`}>
-                            {msg.name}
-                        </p>
-                        <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                            {new Date(msg.date).toLocaleDateString()}
-                        </span>
-                    </div>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">{msg.email}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-snug">
-                        {msg.message}
-                    </p>
-                    </div>
+                <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                    <Mail size={48} className="mb-2 opacity-20" />
+                    <p>Belum ada pesan masuk.</p>
                 </div>
-                ))
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {messages.map((msg) => (
+                    <div key={msg.id} className="p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow bg-gray-50 dark:bg-gray-700/30">
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm ${msg.isRead ? 'bg-gray-400' : 'bg-emerald-500'}`}>
+                                    {msg.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-gray-800 dark:text-white">{msg.name}</h4>
+                                    <p className="text-xs text-emerald-600 dark:text-emerald-400">{msg.email}</p>
+                                </div>
+                            </div>
+                            <span className="text-xs text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">
+                                {new Date(msg.date).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                        <div className="pl-[52px]">
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-sm bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                                {msg.message}
+                            </p>
+                        </div>
+                    </div>
+                    ))}
+                </div>
             )}
-          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 text-center text-xs text-gray-400">
+            Total {messages.length} Pesan Masuk • Data diambil langsung dari Google Sheet
         </div>
       </div>
     </div>
