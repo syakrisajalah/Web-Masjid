@@ -3,7 +3,7 @@ import { Clock, Calendar, ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PrayerTime, ProgramService } from '../types';
 import { api } from '../services/api';
-import { useMosqueInfo } from '../App';
+import { useMosqueInfo } from '../contexts';
 
 export const Home: React.FC = () => {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
