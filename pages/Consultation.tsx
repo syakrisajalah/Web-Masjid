@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Info, MessageSquare, PenTool, Clock, CheckCircle, Lock } from 'lucide-react';
 import { createConsultationSession, sendMessageToUstaz } from '../services/geminiService';
 import { ChatMessage, ConsultationItem, UserRole } from '../types';
-import { useAuth } from '../App';
+import { useAuth } from '../contexts';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 
