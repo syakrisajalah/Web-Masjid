@@ -88,6 +88,15 @@ export interface ConsultationItem {
   answeredAt?: string;
 }
 
+export interface InboxMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  date: string;
+  isRead: boolean;
+}
+
 export interface MosqueGeneralInfo {
     name: string;
     slogan: string;

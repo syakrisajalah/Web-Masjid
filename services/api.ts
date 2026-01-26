@@ -1,4 +1,4 @@
-import { User, Post, Transaction, PrayerTime, MediaItem, UserRole, ProgramService, MosqueProfileData, Staff, BankAccount, ConsultationItem, MosqueGeneralInfo } from '../types';
+import { User, Post, Transaction, PrayerTime, MediaItem, UserRole, ProgramService, MosqueProfileData, Staff, BankAccount, ConsultationItem, MosqueGeneralInfo, InboxMessage } from '../types';
 import { DEFAULT_MOSQUE_INFO } from '../config';
 
 const SCRIPT_URL_KEY = 'masjid_app_script_url';
@@ -89,6 +89,25 @@ const MOCK_GALLERY: MediaItem[] = [
   { id: '4', type: 'video', url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Dokumentasi Video MP4', tags: ['Kajian', 'Video'] },
   { id: '5', type: 'video', url: 'https://www.youtube.com/watch?v=F3a3d24q2Is', title: 'Kajian Rutin - YouTube', tags: ['Kajian', 'Rutin'] },
   { id: '6', type: 'image', url: 'https://picsum.photos/seed/g6/600/400', title: 'Buka Puasa Bersama', tags: ['Ramadhan', 'Sosial'] },
+];
+
+let MOCK_MESSAGES: InboxMessage[] = [
+    {
+        id: '1',
+        name: 'Hamba Allah',
+        email: 'jamaah@gmail.com',
+        message: 'Assalamualaikum admin, apakah bisa mengajukan proposal kegiatan remaja masjid bulan depan?',
+        date: new Date().toISOString(),
+        isRead: false
+    },
+    {
+        id: '2',
+        name: 'Budi Santoso',
+        email: 'budi@example.com',
+        message: 'Mohon info untuk pendaftaran TPA anak usia 5 tahun syaratnya apa saja ya?',
+        date: new Date(Date.now() - 86400000).toISOString(),
+        isRead: true
+    }
 ];
 
 // Mutable mock data for consultations to persist during session
@@ -277,6 +296,38 @@ export const api = {
         }));
     }
     return MOCK_GALLERY;
+  },
+
+  // --- MESSAGES API ---
+  getMessages: async (): Promise<InboxMessage[]> => {
+      const data = await fetchData('getMessages');
+      return Array.isArray(data) ? data : MOCK_MESSAGES;
+  },
+
+  sendMessage: async (name: string, email: string, message: string): Promise<{success: boolean}> => {
+      const url = getScriptUrl();
+      if (!url) {
+          // Mock sending
+          const newMessage: InboxMessage = {
+              id: Date.now().toString(),
+              name, email, message,
+              date: new Date().toISOString(),
+              isRead: false
+          };
+          MOCK_MESSAGES = [newMessage, ...MOCK_MESSAGES];
+          return { success: true };
+      }
+
+      try {
+          await fetch(url, {
+              method: 'POST',
+              body: JSON.stringify({ action: 'sendMessage', name, email, message }),
+          });
+          return { success: true };
+      } catch (e) {
+          console.error(e);
+          return { success: false };
+      }
   },
 
   // --- CONSULTATION API ---

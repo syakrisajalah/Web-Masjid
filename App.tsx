@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
-import { User, UserRole, MosqueGeneralInfo } from './types';
+import { User, UserRole, MosqueGeneralInfo, Post, MediaItem, ProgramService } from './types';
 import { Home } from './pages/Home';
 import { Consultation } from './pages/Consultation';
 import { Profile } from './pages/Profile';
@@ -11,23 +11,205 @@ import { BlogList } from './pages/BlogList';
 import { BlogDetail } from './pages/BlogDetail';
 import { FinancialReport } from './pages/FinancialReport';
 import { Login } from './pages/Login';
-import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn, MapPin, Phone, Mail } from 'lucide-react';
+import { Menu, X, Moon, Sun, User as UserIcon, LogOut, Home as HomeIcon, MessageCircle, Heart, FileText, Image, PieChart, LogIn, MapPin, Phone, Mail, Search, ChevronRight, Loader2 } from 'lucide-react';
 import { setScriptUrl, api } from './services/api';
 import { DEFAULT_MOSQUE_INFO } from './config';
 import { AuthContext, ThemeContext, MosqueContext, useAuth, useTheme, useMosqueInfo } from './contexts';
 
+// --- SEARCH MODAL COMPONENT ---
+const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<{ posts: Post[], gallery: MediaItem[], programs: ProgramService[] }>({ posts: [], gallery: [], programs: [] });
+  const [loading, setLoading] = useState(false);
+  const [allData, setAllData] = useState<{ posts: Post[], gallery: MediaItem[], programs: ProgramService[] } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  // Load all data once when modal opens to perform client-side filtering (fast for small-medium datasets)
+  useEffect(() => {
+    if (isOpen && !allData) {
+      const fetchData = async () => {
+        setLoading(true);
+        const [posts, gallery, programs] = await Promise.all([
+          api.getPosts(),
+          api.getGallery(),
+          api.getPrograms()
+        ]);
+        setAllData({ posts, gallery, programs });
+        setLoading(false);
+      };
+      fetchData();
+    }
+    
+    if (isOpen) {
+       setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isOpen, allData]);
+
+  // Handle Search Filter
+  useEffect(() => {
+    if (!query.trim() || !allData) {
+      setResults({ posts: [], gallery: [], programs: [] });
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    
+    const filteredPosts = allData.posts.filter(p => 
+      p.title.toLowerCase().includes(lowerQuery) || 
+      p.category.toLowerCase().includes(lowerQuery)
+    ).slice(0, 3); // Limit 3 results
+
+    const filteredGallery = allData.gallery.filter(g => 
+      g.title.toLowerCase().includes(lowerQuery) || 
+      (g.tags && g.tags.some(t => t.toLowerCase().includes(lowerQuery)))
+    ).slice(0, 3);
+
+    const filteredPrograms = allData.programs.filter(p => 
+      p.title.toLowerCase().includes(lowerQuery) || 
+      p.description.toLowerCase().includes(lowerQuery)
+    ).slice(0, 2);
+
+    setResults({ posts: filteredPosts, gallery: filteredGallery, programs: filteredPrograms });
+  }, [query, allData]);
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    onClose();
+    setQuery('');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+      
+      {/* Modal Content */}
+      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center border-b border-gray-200 dark:border-gray-700 p-4">
+          <Search className="text-gray-400 mr-3" size={24} />
+          <input 
+            ref={inputRef}
+            type="text" 
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Cari artikel, kegiatan, atau dokumentasi..."
+            className="flex-1 bg-transparent border-none outline-none text-lg text-gray-800 dark:text-gray-100 placeholder-gray-400"
+          />
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="max-h-[60vh] overflow-y-auto p-2">
+            {loading && (
+              <div className="flex items-center justify-center py-8 text-gray-500">
+                <Loader2 className="animate-spin mr-2" size={20} /> Memuat data...
+              </div>
+            )}
+
+            {!loading && !query && (
+               <div className="text-center py-12 text-gray-400 text-sm">
+                  Ketik kata kunci untuk mulai mencari
+               </div>
+            )}
+
+            {!loading && query && results.posts.length === 0 && results.gallery.length === 0 && results.programs.length === 0 && (
+               <div className="text-center py-8 text-gray-500">
+                  Tidak ditemukan hasil untuk "{query}"
+               </div>
+            )}
+
+            {/* Results: Posts */}
+            {results.posts.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2">Artikel & Berita</h3>
+                {results.posts.map(post => (
+                  <div 
+                    key={post.id} 
+                    onClick={() => handleNavigate(`/blog/${post.id}`)}
+                    className="flex items-center gap-3 p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg cursor-pointer group transition-colors"
+                  >
+                    <FileText size={18} className="text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300">{post.title}</p>
+                      <p className="text-xs text-gray-500 truncate">{new Date(post.date).toLocaleDateString()} • {post.category}</p>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-400 group-hover:text-emerald-500" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Results: Gallery */}
+            {results.gallery.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2">Galeri</h3>
+                {results.gallery.map(item => (
+                  <div 
+                    key={item.id} 
+                    onClick={() => handleNavigate('/gallery')}
+                    className="flex items-center gap-3 p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg cursor-pointer group transition-colors"
+                  >
+                    <Image size={18} className="text-purple-600 dark:text-purple-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-purple-700 dark:group-hover:text-purple-300">{item.title}</p>
+                      <div className="flex gap-1 mt-0.5">
+                          {item.tags?.slice(0, 2).map((tag, i) => (
+                              <span key={i} className="text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">#{tag}</span>
+                          ))}
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-400 group-hover:text-purple-500" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+             {/* Results: Programs */}
+             {results.programs.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2">Program</h3>
+                {results.programs.map((prog, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => handleNavigate('/')}
+                    className="flex items-center gap-3 p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg cursor-pointer group transition-colors"
+                  >
+                    <div className="text-lg">{prog.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300">{prog.title}</p>
+                      <p className="text-xs text-gray-500 truncate">{prog.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+        </div>
+        
+        <div className="bg-gray-50 dark:bg-gray-700/50 p-3 text-center text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700">
+            Tekan <kbd className="font-sans px-1 py-0.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded text-[10px]">ESC</kbd> untuk menutup
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 // Components
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // State for Search Modal
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
-  const mosqueInfo = useMosqueInfo(); // Use dynamic data
+  const mosqueInfo = useMosqueInfo(); 
   const location = useLocation();
   const navigate = useNavigate();
 
   // --- MAGIC LINK CONFIGURATION LOGIC ---
   useEffect(() => {
-    // Cek apakah ada parameter 'apiUrl' di URL browser
     const params = new URLSearchParams(window.location.search);
     const newApiUrl = params.get('apiUrl');
 
@@ -38,6 +220,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         alert("Konfigurasi Database berhasil diperbarui otomatis!");
         window.location.reload();
     }
+  }, []);
+
+  // Handle ESC key for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            setIsSearchOpen(true);
+        }
+        if (e.key === 'Escape') {
+            setIsSearchOpen(false);
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const navItems = [
@@ -58,6 +255,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -87,7 +286,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Search Button */}
+            <button 
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                title="Cari (Ctrl + K)"
+            >
+                <Search size={20} />
+            </button>
+
             <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -96,10 +304,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <div className="flex gap-2">
                 <Link 
                   to="/login"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm hidden md:flex"
                 >
                   <LogIn size={16} />
                   <span>Masuk</span>
+                </Link>
+                {/* Mobile Login Icon */}
+                <Link 
+                  to="/login"
+                  className="p-2 md:hidden text-emerald-600 hover:bg-emerald-50 rounded-full"
+                >
+                   <LogIn size={20} />
                 </Link>
               </div>
             ) : (
@@ -137,6 +352,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-400">Menu</h2>
               <button onClick={() => setIsSidebarOpen(false)}><X size={24} /></button>
             </div>
+            
+            {/* Search in Sidebar (Mobile) */}
+            <div className="mb-4">
+                <button 
+                    onClick={() => { setIsSidebarOpen(false); setIsSearchOpen(true); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-700/50 rounded-lg text-sm text-gray-500 dark:text-gray-400"
+                >
+                    <Search size={18} />
+                    Cari sesuatu...
+                </button>
+            </div>
+
             <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
               {navItems.map((item) => (
                 <Link

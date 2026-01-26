@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info } from 'lucide-react';
-import { getScriptUrl, setScriptUrl } from '../services/api';
+import { Settings, FilePlus, Users, DollarSign, Bell, Save, Database, AlertCircle, Share2, Copy, CheckCircle, RefreshCw, Server, Info, Loader2 } from 'lucide-react';
+import { api, getScriptUrl, setScriptUrl } from '../services/api';
 import { useMosqueInfo } from '../contexts';
+import { InboxMessage } from '../types';
 
 export const AdminDashboard: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -11,6 +12,10 @@ export const AdminDashboard: React.FC = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [connectionSource, setConnectionSource] = useState<'env' | 'manual' | 'none'>('none');
   const mosqueInfo = useMosqueInfo();
+  
+  // Messages State
+  const [messages, setMessages] = useState<InboxMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   useEffect(() => {
     // Cek sumber URL saat ini
@@ -26,7 +31,7 @@ export const AdminDashboard: React.FC = () => {
     } else {
         setConnectionSource('none');
     }
-  }, [showSettings]); // Re-check when settings opened
+  }, [showSettings]); 
 
   useEffect(() => {
     if (scriptUrl) {
@@ -34,6 +39,20 @@ export const AdminDashboard: React.FC = () => {
         setMagicLink(`${baseUrl}?apiUrl=${encodeURIComponent(scriptUrl)}`);
     }
   }, [scriptUrl]);
+
+  // Load Messages
+  const loadMessages = async () => {
+      setLoadingMessages(true);
+      const data = await api.getMessages();
+      // Sort by date descending (newest first)
+      const sorted = data.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setMessages(sorted);
+      setLoadingMessages(false);
+  };
+
+  useEffect(() => {
+      loadMessages();
+  }, []);
 
   const handleSaveSettings = () => {
     setScriptUrl(scriptUrl);
@@ -214,7 +233,7 @@ export const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Quick Actions (Mock UI) */}
+      {/* Quick Actions & Inbox */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Kelola Konten</h3>
@@ -234,19 +253,44 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Pesan Masuk</h3>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-3 pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-bold text-gray-800 dark:text-white">Hamba Allah</p>
-                  <p className="text-xs text-gray-500 mb-1">Tanya jawab via form kontak</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">Assalamualaikum admin, apakah bisa mengajukan proposal...</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px]">
+          <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+             <h3 className="text-lg font-bold text-gray-800 dark:text-white">Pesan Masuk</h3>
+             <button onClick={loadMessages} disabled={loadingMessages} className="text-emerald-600 hover:text-emerald-700">
+                {loadingMessages ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
+             </button>
+          </div>
+          
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+            {loadingMessages ? (
+                <div className="flex justify-center items-center h-full">
+                    <Loader2 className="animate-spin text-emerald-600" size={32} />
                 </div>
-              </div>
-            ))}
+            ) : messages.length === 0 ? (
+                <div className="text-center text-gray-400 py-10">Belum ada pesan masuk.</div>
+            ) : (
+                messages.map((msg) => (
+                <div key={msg.id} className="flex gap-3 pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
+                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold text-white ${msg.isRead ? 'bg-gray-400' : 'bg-emerald-500'}`}>
+                        {msg.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                        <p className={`text-sm ${msg.isRead ? 'font-medium text-gray-600 dark:text-gray-300' : 'font-bold text-gray-800 dark:text-white'}`}>
+                            {msg.name}
+                        </p>
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                            {new Date(msg.date).toLocaleDateString()}
+                        </span>
+                    </div>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">{msg.email}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-snug">
+                        {msg.message}
+                    </p>
+                    </div>
+                </div>
+                ))
+            )}
           </div>
         </div>
       </div>

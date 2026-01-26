@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, ChevronRight, Loader2, MapPin } from 'lucide-react';
+import { Clock, Calendar, ChevronRight, Loader2, MapPin, Send, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PrayerTime, ProgramService } from '../types';
 import { api } from '../services/api';
@@ -11,6 +11,11 @@ export const Home: React.FC = () => {
   const [nextPrayer, setNextPrayer] = useState<string>('');
   const [timeDiff, setTimeDiff] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  
+  // Contact Form State
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [isSending, setIsSending] = useState(false);
+  
   const mosqueInfo = useMosqueInfo();
   
   // Tanggal Hari Ini di Makassar
@@ -103,6 +108,22 @@ export const Home: React.FC = () => {
           } else {
               setTimeDiff(`${mins} menit`);
           }
+      }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!contactForm.name || !contactForm.message) return;
+      
+      setIsSending(true);
+      const res = await api.sendMessage(contactForm.name, contactForm.email || '-', contactForm.message);
+      setIsSending(false);
+
+      if (res.success) {
+          alert("Pesan Anda telah terkirim. Terima kasih atas masukan Anda.");
+          setContactForm({ name: '', email: '', message: '' });
+      } else {
+          alert("Maaf, gagal mengirim pesan. Silakan coba lagi.");
       }
   };
 
@@ -224,6 +245,82 @@ export const Home: React.FC = () => {
             Ikut Berdonasi <ChevronRight size={18} />
           </Link>
         </div>
+      </section>
+
+      {/* CONTACT FORM SECTION */}
+      <section className="container mx-auto px-4 py-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100 dark:border-gray-700">
+             <div className="md:w-1/2 bg-emerald-700 p-10 text-white flex flex-col justify-center">
+                 <h2 className="text-3xl font-bold mb-4">Saran & Masukan</h2>
+                 <p className="opacity-90 mb-8 leading-relaxed">
+                     Punya pertanyaan, kritik, saran, atau ingin mengajukan kegiatan? Silakan kirim pesan kepada pengurus DKM Masjid melalui formulir ini.
+                 </p>
+                 <div className="space-y-4">
+                     <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                             <MessageSquare size={20} />
+                         </div>
+                         <div>
+                             <p className="font-semibold">Respon Cepat</p>
+                             <p className="text-xs opacity-75">Insya Allah dibalas 1x24 jam</p>
+                         </div>
+                     </div>
+                     <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                             <Calendar size={20} />
+                         </div>
+                         <div>
+                             <p className="font-semibold">Sekretariat</p>
+                             <p className="text-xs opacity-75">Buka Setiap Hari, Ba'da Ashar - Isya</p>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <div className="md:w-1/2 p-10">
+                 <form onSubmit={handleSendMessage} className="space-y-4">
+                     <div>
+                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
+                         <input 
+                            type="text" 
+                            required
+                            className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 dark:text-white"
+                            placeholder="Hamba Allah"
+                            value={contactForm.name}
+                            onChange={e => setContactForm({...contactForm, name: e.target.value})}
+                         />
+                     </div>
+                     <div>
+                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email / WhatsApp (Opsional)</label>
+                         <input 
+                            type="text" 
+                            className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 dark:text-white"
+                            placeholder="Contoh: 0812..."
+                            value={contactForm.email}
+                            onChange={e => setContactForm({...contactForm, email: e.target.value})}
+                         />
+                     </div>
+                     <div>
+                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pesan Anda</label>
+                         <textarea 
+                            required
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 dark:text-white"
+                            placeholder="Tulis pesan Anda di sini..."
+                            value={contactForm.message}
+                            onChange={e => setContactForm({...contactForm, message: e.target.value})}
+                         />
+                     </div>
+                     <button 
+                        type="submit" 
+                        disabled={isSending}
+                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                     >
+                         {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                         Kirim Pesan
+                     </button>
+                 </form>
+             </div>
+          </div>
       </section>
     </div>
   );

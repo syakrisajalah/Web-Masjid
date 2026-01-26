@@ -8,13 +8,14 @@
  * 2. Sheet 'posts': id, title, category, excerpt, content, date, author, imageUrl
  * 3. Sheet 'finance': id, date, description, amount, type, category
  * 4. Sheet 'prayer_times': name, time
- * 5. Sheet 'gallery': id, type, url, title
+ * 5. Sheet 'gallery': id, type, url, title, tags
  * 6. Sheet 'programs': title, description, icon (emoji/text)
  * 7. Sheet 'profile': section, content 
  * 8. Sheet 'staff': name, role, imageUrl
  * 9. Sheet 'bank_accounts': bankName, accountNumber, holderName
  * 10. Sheet 'consultations': id, userId, userName, question, answer, answeredBy, status, createdAt, answeredAt
  * 11. Sheet 'app_config': key, value (Contoh key: name, slogan, address, phone, hero_image, dll)
+ * 12. Sheet 'messages': id, name, email, message, date, isRead (TRUE/FALSE)
  * 
  * CARA DEPLOY (Update):
  * 1. Klik tombol "Deploy" > "Manage deployments"
@@ -49,6 +50,8 @@ function doGet(e) {
       result = getData(db, 'bank_accounts');
     } else if (action === 'getConsultations') {
        result = getData(db, 'consultations');
+    } else if (action === 'getMessages') {
+       result = getData(db, 'messages');
     } else if (action === 'getAppConfig') {
        // Mengambil konfigurasi dinamis (Key-Value)
        result = getData(db, 'app_config');
@@ -124,6 +127,13 @@ function doPost(e) {
         } else {
             result = { success: false, message: 'Data tidak ditemukan' };
         }
+    } else if (action === 'sendMessage') {
+        const sheet = db.getSheetByName('messages');
+        const id = new Date().getTime().toString();
+        const now = new Date().toISOString();
+        // id, name, email, message, date, isRead
+        sheet.appendRow([id, params.name, params.email, params.message, now, false]);
+        result = { success: true, message: 'Pesan berhasil dikirim' };
     }
     
   } catch (err) {
