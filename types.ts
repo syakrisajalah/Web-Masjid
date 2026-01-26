@@ -49,6 +49,7 @@ export interface MediaItem {
   type: 'image' | 'video';
   url: string;
   title: string;
+  tags?: string[]; // Properti baru untuk kategori/tagging
 }
 
 export interface ProgramService {

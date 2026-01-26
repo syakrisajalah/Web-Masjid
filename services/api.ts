@@ -83,11 +83,12 @@ const MOCK_TRANSACTIONS: Transaction[] = [
 ];
 
 const MOCK_GALLERY: MediaItem[] = [
-  { id: '1', type: 'image', url: 'https://picsum.photos/seed/g1/600/400', title: 'Shalat Idul Fitri 1445H' },
-  { id: '2', type: 'image', url: 'https://picsum.photos/seed/g2/600/400', title: 'Kegiatan Santunan Yatim' },
-  { id: '3', type: 'image', url: 'https://drive.google.com/file/d/1XWkYwY6118_vJjJ60gA-9Q3uVv7j4w/view?usp=sharing', title: 'Contoh Foto dari G-Drive' }, 
-  { id: '4', type: 'video', url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Dokumentasi Video MP4' },
-  { id: '5', type: 'video', url: 'https://www.youtube.com/watch?v=F3a3d24q2Is', title: 'Kajian Rutin - YouTube' },
+  { id: '1', type: 'image', url: 'https://picsum.photos/seed/g1/600/400', title: 'Shalat Idul Fitri 1445H', tags: ['Idul Fitri', 'Ibadah'] },
+  { id: '2', type: 'image', url: 'https://picsum.photos/seed/g2/600/400', title: 'Kegiatan Santunan Yatim', tags: ['Sosial', 'Santunan'] },
+  { id: '3', type: 'image', url: 'https://drive.google.com/file/d/1XWkYwY6118_vJjJ60gA-9Q3uVv7j4w/view?usp=sharing', title: 'Contoh Foto dari G-Drive', tags: ['Kegiatan'] }, 
+  { id: '4', type: 'video', url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Dokumentasi Video MP4', tags: ['Kajian', 'Video'] },
+  { id: '5', type: 'video', url: 'https://www.youtube.com/watch?v=F3a3d24q2Is', title: 'Kajian Rutin - YouTube', tags: ['Kajian', 'Rutin'] },
+  { id: '6', type: 'image', url: 'https://picsum.photos/seed/g6/600/400', title: 'Buka Puasa Bersama', tags: ['Ramadhan', 'Sosial'] },
 ];
 
 // Mutable mock data for consultations to persist during session
@@ -266,7 +267,16 @@ export const api = {
 
   getGallery: async (): Promise<MediaItem[]> => {
     const data = await fetchData('getGallery');
-    return Array.isArray(data) ? data : MOCK_GALLERY;
+    
+    // Perbaikan: Pastikan data tag di-parse jika dari Sheet datangnya string "Tag1, Tag2"
+    if (Array.isArray(data)) {
+        return data.map((item: any) => ({
+            ...item,
+            // Jika 'tags' adalah string, split jadi array. Jika sudah array atau undefined, biarkan.
+            tags: typeof item.tags === 'string' ? item.tags.split(',').map((t: string) => t.trim()) : item.tags
+        }));
+    }
+    return MOCK_GALLERY;
   },
 
   // --- CONSULTATION API ---
