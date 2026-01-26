@@ -3,14 +3,25 @@ import { Clock, Calendar, ChevronRight, Loader2, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PrayerTime, ProgramService } from '../types';
 import { api } from '../services/api';
-import { MOSQUE_INFO } from '../config';
+import { useMosqueInfo } from '../App';
 
 export const Home: React.FC = () => {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [programs, setPrograms] = useState<ProgramService[]>([]);
   const [nextPrayer, setNextPrayer] = useState<string>('');
+  const [timeDiff, setTimeDiff] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const mosqueInfo = useMosqueInfo();
   
+  // Tanggal Hari Ini di Makassar
+  const currentDateDisplay = new Date().toLocaleDateString('id-ID', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      timeZone: 'Asia/Makassar' 
+  });
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -23,13 +34,77 @@ export const Home: React.FC = () => {
       setPrayerTimes(times);
       setPrograms(programData);
       
-      // Simple logic to set next prayer (mock logic)
-      setNextPrayer('Ashar');
+      calculateNextPrayer(times);
       setLoading(false);
     };
 
     loadData();
-  }, []);
+
+    // Update countdown every minute
+    const interval = setInterval(() => {
+        // We need to fetch current state of prayerTimes, which might be empty initially
+        // Ideally we should use a ref or dependency, but re-calculating with existing state is safe here
+        if (prayerTimes.length > 0) calculateNextPrayer(prayerTimes);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []); // Run once on mount
+
+  // Recalculate when prayerTimes data arrives
+  useEffect(() => {
+      if (prayerTimes.length > 0) calculateNextPrayer(prayerTimes);
+  }, [prayerTimes]);
+
+  const calculateNextPrayer = (times: PrayerTime[]) => {
+      if (!times || times.length === 0) return;
+
+      // GET CURRENT TIME IN MAKASSAR (WITA)
+      // Ini memastikan hitungan mundur akurat sesuai lokasi masjid meskipun user membukanya dari Jakarta/Papua.
+      const now = new Date();
+      const makassarTimeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Makassar', hour12: false });
+      const [hStr, mStr] = makassarTimeStr.split(':');
+      const currentMinutes = parseInt(hStr) * 60 + parseInt(mStr);
+      
+      let next = null;
+      let minDiff = Infinity;
+
+      // Filter out 'Terbit' mostly for next prayer calculation
+      const relevantTimes = times.filter(t => t.name !== 'Terbit');
+
+      for (const pt of relevantTimes) {
+          const [h, m] = pt.time.split(':').map(Number);
+          const ptMinutes = h * 60 + m;
+          
+          if (ptMinutes > currentMinutes) {
+              next = pt;
+              minDiff = ptMinutes - currentMinutes;
+              break; 
+          }
+      }
+
+      // If no next prayer found today (e.g. after Isya), next is Subuh tomorrow
+      if (!next) {
+          const subuh = relevantTimes.find(t => t.name === 'Subuh');
+          if (subuh) {
+              next = subuh;
+              const [h, m] = subuh.time.split(':').map(Number);
+              const subuhMinutes = h * 60 + m;
+              // Time until midnight + time from midnight to Subuh
+              minDiff = (24 * 60 - currentMinutes) + subuhMinutes; 
+          }
+      }
+
+      if (next) {
+          setNextPrayer(next.name);
+          const hours = Math.floor(minDiff / 60);
+          const mins = minDiff % 60;
+          if (hours > 0) {
+              setTimeDiff(`${hours} jam ${mins} menit`);
+          } else {
+              setTimeDiff(`${mins} menit`);
+          }
+      }
+  };
 
   return (
     <div className="space-y-12 pb-12">
@@ -37,7 +112,7 @@ export const Home: React.FC = () => {
       <section className="relative min-h-[550px] flex items-center justify-center text-center px-4">
         <div className="absolute inset-0 bg-emerald-900 overflow-hidden">
           <img 
-            src={MOSQUE_INFO.images.hero} 
+            src={mosqueInfo.images.hero} 
             alt="Mosque Interior" 
             className="w-full h-full object-cover opacity-30"
           />
@@ -50,20 +125,20 @@ export const Home: React.FC = () => {
           </span>
           
           <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
-            {MOSQUE_INFO.name}
+            {mosqueInfo.name}
           </h1>
           
           <h2 className="text-xl md:text-2xl text-gold-400 font-medium animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-            {MOSQUE_INFO.slogan}
+            {mosqueInfo.slogan}
           </h2>
 
           <p className="text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 hidden md:block whitespace-pre-wrap">
-            {MOSQUE_INFO.description}
+            {mosqueInfo.description}
           </p>
           
           <div className="flex items-center justify-center gap-2 text-emerald-200 text-sm animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
              <MapPin size={16} />
-             <span>{MOSQUE_INFO.address}</span>
+             <span>{mosqueInfo.address}</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
@@ -83,12 +158,12 @@ export const Home: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <div className="text-center md:text-left mb-4 md:mb-0">
               <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2 justify-center md:justify-start">
-                <Clock className="text-gold-500" /> Jadwal Shalat
+                <Clock className="text-gold-500" /> Jadwal Shalat (WITA)
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{currentDateDisplay}</p>
             </div>
-            <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium">
-              Menuju {nextPrayer} dalam 45 menit
+            <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium animate-pulse">
+              {nextPrayer ? `Menuju ${nextPrayer} dalam ${timeDiff}` : 'Memuat jadwal...'}
             </div>
           </div>
           
