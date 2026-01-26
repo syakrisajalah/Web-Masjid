@@ -9,7 +9,7 @@ export interface User {
   name: string;
   role: UserRole;
   email?: string;
-  isUstadz?: boolean; // New Flag
+  isUstadz?: boolean;
 }
 
 export interface PrayerTime {
@@ -22,7 +22,7 @@ export interface Post {
   title: string;
   category: 'Berita' | 'Artikel' | 'Pengumuman';
   excerpt: string;
-  content: string; // Full article content
+  content: string; 
   date: string;
   author: string;
   imageUrl?: string;
@@ -51,11 +51,10 @@ export interface MediaItem {
   title: string;
 }
 
-// New Types
 export interface ProgramService {
   title: string;
   description: string;
-  icon: string; // Emoji char or icon identifier
+  icon: string;
 }
 
 export interface Staff {
@@ -67,7 +66,7 @@ export interface Staff {
 export interface MosqueProfileData {
   history: string;
   vision: string;
-  mission: string; // Can be bullet points separated by newline
+  mission: string;
 }
 
 export interface BankAccount {
@@ -82,8 +81,30 @@ export interface ConsultationItem {
   userName: string;
   question: string;
   answer?: string;
-  answeredBy?: string; // Name of Ustadz
+  answeredBy?: string;
   status: 'pending' | 'answered';
   createdAt: string;
   answeredAt?: string;
+}
+
+export interface MosqueGeneralInfo {
+    name: string;
+    slogan: string;
+    description: string;
+    address: string;
+    contact: {
+        phone: string;
+        email: string;
+        whatsapp: string;
+    };
+    social: {
+        facebook: string;
+        instagram: string;
+        youtube: string;
+    };
+    images: {
+        hero: string;
+        profile: string;
+        qris: string;
+    };
 }
