@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Loader2, X } from 'lucide-react';
+import { Play, Loader2, X, Youtube } from 'lucide-react';
 import { api } from '../services/api';
 import { MediaItem } from '../types';
 
@@ -27,6 +27,17 @@ export const Gallery: React.FC = () => {
         return () => window.removeEventListener('keydown', handleEsc);
     }, []);
 
+    // Helper: Extract YouTube ID
+    const getYouTubeId = (url: string) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    const isYouTube = (url: string) => {
+        return getYouTubeId(url) !== null;
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
              <h1 className="text-3xl font-bold text-emerald-800 dark:text-emerald-400 mb-8 text-center">Galeri Foto & Video</h1>
@@ -37,39 +48,58 @@ export const Gallery: React.FC = () => {
                 </div>
              ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {items.map((item, idx) => (
-                        <div 
-                            key={idx} 
-                            onClick={() => setSelectedItem(item)}
-                            className="group relative rounded-xl overflow-hidden shadow-lg cursor-pointer bg-black h-64 border border-gray-200 dark:border-gray-700"
-                        >
-                            {/* Thumbnail rendering */}
-                            {item.type === 'video' ? (
-                                <div className="w-full h-full relative">
-                                    {/* Video thumbnail fallback or generic video styling */}
-                                    <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                                        <video src={item.url} className="w-full h-full object-cover opacity-60" muted />
-                                    </div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-14 h-14 bg-emerald-600/90 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                                            <Play fill="white" className="text-white ml-1" size={28} />
+                    {items.map((item, idx) => {
+                        const youtubeId = item.type === 'video' ? getYouTubeId(item.url) : null;
+                        
+                        return (
+                            <div 
+                                key={idx} 
+                                onClick={() => setSelectedItem(item)}
+                                className="group relative rounded-xl overflow-hidden shadow-lg cursor-pointer bg-black h-64 border border-gray-200 dark:border-gray-700"
+                            >
+                                {/* Thumbnail rendering */}
+                                {item.type === 'video' ? (
+                                    <div className="w-full h-full relative">
+                                        {youtubeId ? (
+                                            // YouTube Thumbnail
+                                            <img 
+                                                src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`} 
+                                                alt={item.title} 
+                                                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                            />
+                                        ) : (
+                                            // MP4 / Raw Video Fallback
+                                            <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                                                <video src={item.url} className="w-full h-full object-cover opacity-60" muted />
+                                            </div>
+                                        )}
+                                        
+                                        {/* Play Overlay */}
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className={`w-14 h-14 ${youtubeId ? 'bg-red-600' : 'bg-emerald-600/90'} rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform`}>
+                                                {youtubeId ? <Youtube fill="white" className="text-white" size={28} /> : <Play fill="white" className="text-white ml-1" size={28} />}
+                                            </div>
                                         </div>
                                     </div>
+                                ) : (
+                                    // Image
+                                    <img 
+                                        src={item.url} 
+                                        alt={item.title} 
+                                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                    />
+                                )}
+                                
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                                    <p className="text-white font-medium line-clamp-1">{item.title}</p>
+                                    <p className="text-xs text-gray-300 capitalize flex items-center gap-1">
+                                        {item.type} 
+                                        {youtubeId && <span className="text-[10px] bg-red-600 px-1 rounded text-white font-bold ml-1">YouTube</span>}
+                                    </p>
                                 </div>
-                            ) : (
-                                <img 
-                                    src={item.url} 
-                                    alt={item.title} 
-                                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                                />
-                            )}
-                            
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                                <p className="text-white font-medium line-clamp-1">{item.title}</p>
-                                <p className="text-xs text-gray-300 capitalize">{item.type}</p>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
              )}
 
@@ -87,19 +117,29 @@ export const Gallery: React.FC = () => {
                      </button>
                      
                      <div 
-                        className="relative max-w-6xl w-full max-h-[90vh] flex flex-col items-center justify-center" 
+                        className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center" 
                         onClick={e => e.stopPropagation()}
                      >
                          {selectedItem.type === 'video' ? (
-                             <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl border border-gray-800">
-                                <video 
-                                    src={selectedItem.url} 
-                                    controls 
-                                    autoPlay 
-                                    className="w-full h-full"
-                                >
-                                    Browser Anda tidak mendukung tag video.
-                                </video>
+                             <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl border border-gray-800 relative">
+                                {isYouTube(selectedItem.url) ? (
+                                    <iframe
+                                        className="w-full h-full"
+                                        src={`https://www.youtube.com/embed/${getYouTubeId(selectedItem.url)}?autoplay=1&rel=0`}
+                                        title={selectedItem.title}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                ) : (
+                                    <video 
+                                        src={selectedItem.url} 
+                                        controls 
+                                        autoPlay 
+                                        className="w-full h-full"
+                                    >
+                                        Browser Anda tidak mendukung tag video.
+                                    </video>
+                                )}
                              </div>
                          ) : (
                              <img 
