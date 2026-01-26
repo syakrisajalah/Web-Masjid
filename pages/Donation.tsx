@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Copy, CheckCircle, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 import { BankAccount } from '../types';
-import { MOSQUE_INFO } from '../config';
+import { useMosqueInfo } from '../contexts';
 
 export const Donation: React.FC = () => {
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState('');
+  const mosqueInfo = useMosqueInfo();
 
   useEffect(() => {
     const loadBanks = async () => {
@@ -38,10 +39,10 @@ export const Donation: React.FC = () => {
             <p className="text-sm opacity-90 mb-2">Scan QRIS (Mendukung GoPay, OVO, Dana, LinkAja, BCA Mobile, dll)</p>
             <div className="bg-white p-4 inline-block rounded-xl shadow-lg">
                 {/* QRIS Image from Config */}
-               <img src={MOSQUE_INFO.images.qris} alt="QRIS Code" className="w-48 h-48 object-cover" />
+               <img src={mosqueInfo.images.qris} alt="QRIS Code" className="w-48 h-48 object-cover" />
                <div className="text-black font-bold text-xl mt-2">QRIS</div>
             </div>
-            <p className="mt-4 font-semibold">a.n {MOSQUE_INFO.name}</p>
+            <p className="mt-4 font-semibold">a.n {mosqueInfo.name}</p>
           </div>
 
           <div className="p-8 space-y-6">
@@ -72,7 +73,7 @@ export const Donation: React.FC = () => {
 
             <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
                 <p className="font-bold mb-1">Konfirmasi Donasi</p>
-                <p>Setelah melakukan transfer, mohon konfirmasi ke WhatsApp Admin: <span className="font-mono font-bold">{MOSQUE_INFO.contact.phone}</span> agar dapat kami catat dalam laporan keuangan.</p>
+                <p>Setelah melakukan transfer, mohon konfirmasi ke WhatsApp Admin: <span className="font-mono font-bold">{mosqueInfo.contact.phone}</span> agar dapat kami catat dalam laporan keuangan.</p>
             </div>
           </div>
         </div>
