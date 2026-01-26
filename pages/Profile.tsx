@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Award, Users, History, Loader2, CheckCircle2 } from 'lucide-react';
 import { MosqueProfileData, Staff } from '../types';
 import { api } from '../services/api';
-import { MOSQUE_INFO } from '../config';
+import { useMosqueInfo } from '../contexts';
 
 export const Profile: React.FC = () => {
   const [profile, setProfile] = useState<MosqueProfileData | null>(null);
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
+  const mosqueInfo = useMosqueInfo();
 
   useEffect(() => {
       const loadProfile = async () => {
@@ -67,7 +68,7 @@ export const Profile: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <img 
-            src={MOSQUE_INFO.images.profile}
+            src={mosqueInfo.images.profile}
             alt="Mosque Building" 
             className="rounded-2xl shadow-xl w-full h-[300px] object-cover"
           />
