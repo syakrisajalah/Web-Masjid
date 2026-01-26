@@ -1,17 +1,17 @@
 export const MOSQUE_INFO = {
-    name: "Masjid Raya Al-Muamalah",
+    name: "Masjid Al-Muamalah",
     slogan: "Pusat Peradaban & Pemberdayaan Umat",
-    description: "Masjid Al-Mustaqbal hadir sebagai pusat kegiatan ibadah yang nyaman, modern, dan inklusif. Kami berkomitmen untuk membangun masyarakat madani melalui program pendidikan, sosial, dan ekonomi berbasis syariah.",
-    address: "Jl. H. Juanda No. 99, Ciputat, Tangerang Selatan",
+    description: "Masjid Al-Muamalah hadir sebagai pusat kegiatan ibadah yang nyaman, modern, dan inklusif. Kami berkomitmen untuk membangun masyarakat madani melalui program pendidikan, sosial, dan ekonomi berbasis syariah.",
+    address: "JL Kejayaan Utara Raya BTP Blok L, Makassar",
     contact: {
         phone: "+62 812-3456-7890",
-        email: "info@almustaqbal.id",
+        email: "info@almuamalah.id",
         whatsapp: "6281234567890"
     },
     social: {
-        facebook: "Masjid Al Mustaqbal",
-        instagram: "@almustaqbal.official",
-        youtube: "Al-Mustaqbal TV"
+        facebook: "Masjid Al Muamalah",
+        instagram: "@almuamalah.official",
+        youtube: "Al-Muamalah TV"
     },
     images: {
         hero: "https://picsum.photos/1920/1080?grayscale&blur=2", // Gambar besar di halaman Beranda
