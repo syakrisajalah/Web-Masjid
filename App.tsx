@@ -217,10 +217,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div>
             <h4 className="font-semibold text-white mb-4 text-lg border-b border-emerald-700 pb-2 inline-block">Hubungi Kami</h4>
             <div className="space-y-3 text-sm opacity-90">
-                <p className="flex items-start gap-3">
-                    <MapPin size={18} className="mt-1 flex-shrink-0 text-gold-400" />
+                <a 
+                    href="https://www.google.com/maps/search/?api=1&query=-5.1371483500853605,119.50608370916899"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 hover:text-gold-400 transition-colors group"
+                >
+                    <MapPin size={18} className="mt-1 flex-shrink-0 text-gold-400 group-hover:text-gold-300" />
                     <span>{mosqueInfo.address}</span>
-                </p>
+                </a>
                 <p className="flex items-center gap-3">
                     <Phone size={18} className="text-gold-400" />
                     <span>{mosqueInfo.contact.phone}</span>

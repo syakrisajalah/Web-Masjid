@@ -136,10 +136,15 @@ export const Home: React.FC = () => {
             {mosqueInfo.description}
           </p>
           
-          <div className="flex items-center justify-center gap-2 text-emerald-200 text-sm animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+          <a 
+            href="https://www.google.com/maps/search/?api=1&query=-5.1371483500853605,119.50608370916899"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 text-emerald-200 text-sm animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300 hover:text-white hover:underline transition-all"
+          >
              <MapPin size={16} />
              <span>{mosqueInfo.address}</span>
-          </div>
+          </a>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
             <Link to="/donation" className="px-8 py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-gold-500/30 transform hover:-translate-y-1">
