@@ -41,14 +41,19 @@ export const Gallery: React.FC = () => {
     // Helper: Convert Google Drive Link to Direct Image Link
     const convertDriveUrl = (url: string) => {
         if (!url) return '';
-        // Cek pola: drive.google.com/file/d/{ID}/view atau id={ID}
-        const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)|\?id=([a-zA-Z0-9_-]+)/);
         
-        if (driveMatch) {
-            const id = driveMatch[1] || driveMatch[2];
-            // Menggunakan endpoint export=view untuk direct image
-            return `https://drive.google.com/uc?export=view&id=${id}`;
+        // Regex untuk menangkap ID file Google Drive
+        // Pola 1: https://drive.google.com/file/d/FILE_ID/view
+        // Pola 2: https://drive.google.com/open?id=FILE_ID
+        const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        
+        if (idMatch && idMatch[1]) {
+            const id = idMatch[1];
+            // Menggunakan endpoint 'thumbnail' dengan parameter size (sz=w1000)
+            // Endpoint ini jauh lebih stabil untuk embed di website dibandingkan 'uc?export=view'
+            return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
         }
+        
         return url;
     };
 
@@ -64,7 +69,6 @@ export const Gallery: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {items.map((item, idx) => {
                         const youtubeId = item.type === 'video' ? getYouTubeId(item.url) : null;
-                        // Proses URL: Jika image, coba convert Drive URL. Jika video, biarkan (kecuali thumbnail logic YouTube).
                         const displayUrl = item.type === 'image' ? convertDriveUrl(item.url) : item.url;
                         
                         return (
@@ -77,20 +81,16 @@ export const Gallery: React.FC = () => {
                                 {item.type === 'video' ? (
                                     <div className="w-full h-full relative">
                                         {youtubeId ? (
-                                            // YouTube Thumbnail
                                             <img 
                                                 src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`} 
                                                 alt={item.title} 
                                                 className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                                             />
                                         ) : (
-                                            // MP4 / Raw Video Fallback
                                             <div className="w-full h-full bg-gray-900 flex items-center justify-center">
                                                 <video src={item.url} className="w-full h-full object-cover opacity-60" muted />
                                             </div>
                                         )}
-                                        
-                                        {/* Play Overlay */}
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <div className={`w-14 h-14 ${youtubeId ? 'bg-red-600' : 'bg-emerald-600/90'} rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform`}>
                                                 {youtubeId ? <Youtube fill="white" className="text-white" size={28} /> : <Play fill="white" className="text-white ml-1" size={28} />}
@@ -98,13 +98,11 @@ export const Gallery: React.FC = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    // Image (Supports Google Drive conversion)
                                     <img 
                                         src={displayUrl} 
                                         alt={item.title} 
                                         className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                                         onError={(e) => {
-                                            // Fallback jika gambar drive gagal load (misal permission restricted)
                                             (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Gagal+Muat+Gambar';
                                         }}
                                     />
@@ -123,7 +121,6 @@ export const Gallery: React.FC = () => {
                 </div>
              )}
 
-             {/* Lightbox Modal */}
              {selectedItem && (
                  <div 
                     className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-in fade-in duration-200" 
