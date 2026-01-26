@@ -38,6 +38,20 @@ export const Gallery: React.FC = () => {
         return getYouTubeId(url) !== null;
     };
 
+    // Helper: Convert Google Drive Link to Direct Image Link
+    const convertDriveUrl = (url: string) => {
+        if (!url) return '';
+        // Cek pola: drive.google.com/file/d/{ID}/view atau id={ID}
+        const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)|\?id=([a-zA-Z0-9_-]+)/);
+        
+        if (driveMatch) {
+            const id = driveMatch[1] || driveMatch[2];
+            // Menggunakan endpoint export=view untuk direct image
+            return `https://drive.google.com/uc?export=view&id=${id}`;
+        }
+        return url;
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
              <h1 className="text-3xl font-bold text-emerald-800 dark:text-emerald-400 mb-8 text-center">Galeri Foto & Video</h1>
@@ -50,6 +64,8 @@ export const Gallery: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {items.map((item, idx) => {
                         const youtubeId = item.type === 'video' ? getYouTubeId(item.url) : null;
+                        // Proses URL: Jika image, coba convert Drive URL. Jika video, biarkan (kecuali thumbnail logic YouTube).
+                        const displayUrl = item.type === 'image' ? convertDriveUrl(item.url) : item.url;
                         
                         return (
                             <div 
@@ -82,11 +98,15 @@ export const Gallery: React.FC = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    // Image
+                                    // Image (Supports Google Drive conversion)
                                     <img 
-                                        src={item.url} 
+                                        src={displayUrl} 
                                         alt={item.title} 
                                         className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                        onError={(e) => {
+                                            // Fallback jika gambar drive gagal load (misal permission restricted)
+                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Gagal+Muat+Gambar';
+                                        }}
                                     />
                                 )}
                                 
@@ -143,7 +163,7 @@ export const Gallery: React.FC = () => {
                              </div>
                          ) : (
                              <img 
-                                 src={selectedItem.url} 
+                                 src={convertDriveUrl(selectedItem.url)} 
                                  alt={selectedItem.title} 
                                  className="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain border border-gray-800"
                              />

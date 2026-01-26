@@ -85,6 +85,7 @@ const MOCK_TRANSACTIONS: Transaction[] = [
 const MOCK_GALLERY: MediaItem[] = [
   { id: '1', type: 'image', url: 'https://picsum.photos/seed/g1/600/400', title: 'Shalat Idul Fitri 1445H' },
   { id: '2', type: 'image', url: 'https://picsum.photos/seed/g2/600/400', title: 'Kegiatan Santunan Yatim' },
+  { id: '3', type: 'image', url: 'https://drive.google.com/file/d/1XWkYwY6118_vJjJ60gA-9Q3uVv7j4w/view?usp=sharing', title: 'Contoh Foto dari G-Drive' }, 
   { id: '4', type: 'video', url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Dokumentasi Video MP4' },
   { id: '5', type: 'video', url: 'https://www.youtube.com/watch?v=F3a3d24q2Is', title: 'Kajian Rutin - YouTube' },
 ];
