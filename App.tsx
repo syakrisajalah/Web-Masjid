@@ -266,7 +266,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </button>
             <Link to="/" className="text-xl md:text-2xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2 truncate max-w-[200px] md:max-w-none">
               <span>🕌</span> <span className="hidden sm:inline">{mosqueInfo.name}</span>
-              <span className="sm:hidden">Al-Mustaqbal</span>
+              
             </Link>
           </div>
 
