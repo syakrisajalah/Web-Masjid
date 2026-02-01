@@ -165,7 +165,8 @@ export const Profile: React.FC = () => {
         {/* 2. STRUKTUR KEPENGURUSAN */}
         <section className="space-y-16 pt-10 border-t border-gray-100 dark:border-gray-800">
             <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Struktur Organisasi</h2>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">PENGURUS MASJID BESAR AL MUAMALAH KECAMATAN TAMALANREA KOTA
+MAKASSAR PERIODE 2025-2030</h2>
                 <div className="max-w-md mx-auto relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input 
@@ -213,7 +214,7 @@ export const Profile: React.FC = () => {
                         <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                     </div>
                     <div className="relative flex justify-center">
-                        <span className="bg-gray-50 dark:bg-gray-900 px-6 text-[10px] font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-[0.5em]">Manajemen Eksekutif Harian</span>
+                        <span className="bg-gray-50 dark:bg-gray-900 px-6 text-[10px] font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-[0.5em]">Pengurus Harian</span>
                     </div>
                 </div>
 
