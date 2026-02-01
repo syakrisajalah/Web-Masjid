@@ -174,7 +174,8 @@ export const Profile: React.FC = () => {
         {/* 2. STRUKTUR KEPENGURUSAN */}
         <section className="space-y-10 pt-10 border-t border-gray-100 dark:border-gray-800">
             <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Struktur Kepengurusan</h2>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">PENGURUS MASJID BESAR AL MUAMALAH KECAMATAN TAMALANREA KOTA
+MAKASSAR PERIODE 2025-2030</h2>
                 <div className="max-w-md mx-auto relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500" size={18} />
                     <input 
