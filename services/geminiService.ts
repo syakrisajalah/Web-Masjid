@@ -1,22 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Ensure API Key exists
-const apiKey = process.env.API_KEY;
-
-// Initialize AI Instance
-// Note: If apiKey is missing, this might throw an error or fail silently depending on usage.
-// The UI should handle cases where the AI service fails.
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+// Initialize AI Instance strictly following guidelines
+// Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+// The key is assumed to be handled externally and is a hard requirement.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const createConsultationSession = () => {
-  if (!ai) {
-      console.error("API Key is missing via process.env.API_KEY");
-      // Return a dummy object that throws a clear error when used
-      return {
-          sendMessageStream: async () => { throw new Error("API Key configuration is missing. Please check your .env or Vercel settings."); }
-      };
-  }
-
   // Menggunakan model 'gemini-3-flash-preview' sesuai panduan untuk Basic Text Tasks
   return ai.chats.create({
     model: 'gemini-3-flash-preview',

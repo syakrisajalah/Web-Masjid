@@ -5,11 +5,8 @@ const SCRIPT_URL_KEY = 'masjid_app_script_url';
 const ENV_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
 
 export const getScriptUrl = () => {
-  // 1. Cek LocalStorage (Biasanya diset manual oleh Admin lewat Dashboard untuk testing/override)
   const localUrl = localStorage.getItem(SCRIPT_URL_KEY);
   if (localUrl) return localUrl;
-
-  // 2. Jika tidak ada di LocalStorage (User biasa/HP), gunakan URL dari Environment Variable/Config
   return ENV_SCRIPT_URL || '';
 };
 
@@ -36,20 +33,95 @@ const MOCK_PROGRAMS: ProgramService[] = [
 ];
 
 const MOCK_PROFILE: MosqueProfileData = {
-  history: "Masjid Al-Mustaqbal didirikan pada tahun 2010 oleh sekelompok tokoh masyarakat yang menginginkan adanya pusat kegiatan Islam yang terpadu. Berawal dari musholla kecil, kini telah berkembang menjadi pusat peradaban dengan fasilitas pendidikan dan pemberdayaan ekonomi umat.",
+  history: "Masjid Besar Al-Muamalah berlokasi di Kecamatan Tamalanrea, Makassar. Menjadi pusat peribadahan utama bagi masyarakat BTP dan sekitarnya. Dengan struktur kepengurusan periode 2025-2030, masjid ini berkomitmen meningkatkan pelayanan umat melalui berbagai bidang pemberdayaan.",
   vision: "Menjadi masjid percontohan dalam manajemen modern yang berbasis pada pelayanan umat dan kemandirian ekonomi.",
   mission: "- Menyelenggarakan peribadahan yang khusyuk dan nyaman.\n- Mengembangkan pendidikan Al-Quran berbasis teknologi.\n- Memberdayakan ekonomi umat melalui Baitul Maal.\n- Menjadi pusat informasi dan kajian keislaman."
 };
 
 const MOCK_STAFF: Staff[] = [
-  { role: 'Ketua DKM', name: 'H. Abdullah S.Ag', imageUrl: 'https://picsum.photos/seed/staff1/100' },
-  { role: 'Sekretaris', name: 'Ust. Ahmad Zaini', imageUrl: 'https://picsum.photos/seed/staff2/100' },
-  { role: 'Bendahara', name: 'Bpk. Irwan Santoso', imageUrl: 'https://picsum.photos/seed/staff3/100' },
+  // PELINDUNG
+  { role: 'Pelindung', name: 'Walikota Makassar' },
+  { role: 'Pelindung', name: 'Ketua Yayasan Al Falaq Bumi Tamalanrea' },
+  { role: 'Pelindung', name: 'Kepala Kecamatan Tamalanrea Kota Makassar' },
+  { role: 'Pelindung', name: 'Kepala Kantor Urusan Agama Kec. Tamalanrea' },
+  
+  // PENASEHAT
+  { role: 'Penasehat', name: 'Prof. Dr. H. Paisal Halim, M.Hum' },
+  { role: 'Penasehat', name: 'Ir. H. Sukardi HS' },
+  { role: 'Penasehat', name: 'Uztad H. Akmal Hasan, LC' },
+  { role: 'Penasehat', name: 'H. Maisani Kecca, S.Sos' },
+
+  // PENGURUS HARIAN INTI
+  { role: 'Ketua Umum', name: 'Assoc Prof Dr. Abdul Malik, S.Pi., M.Si' },
+  { role: 'Sekretaris Umum', name: 'Assoc Prof HR. Fajar, ST., M.Eng' },
+  { role: 'Bendahara', name: 'Drs. H. Muhammad Hasyim, MM' },
+
+  // PILAR 1: EKONOMI, PEMBANGUNAN, PENDIDIKAN
+  { role: 'Wakil Ketua Bidang Ekonomi, Pembangunan dan Pendidikan', name: 'Salman Al Fariz Karsa Sukardi' },
+  
+  { role: 'Koord. Bidang Dana dan Unit Pengumpul Zakat (UPZ)', name: 'Syamsuddin Thalib, S.Sos., M.Si' },
+  { role: 'Wakil Koord. Bidang Dana dan Unit Pengumpul Zakat (UPZ)', name: 'Assoc Prof Dr. dr. H. Husaini Umar, Sp.Pd' },
+  { role: 'Anggota Bidang Dana dan Unit Pengumpul Zakat (UPZ)', name: 'H. Munir Rahim' },
+  { role: 'Anggota Bidang Dana dan Unit Pengumpul Zakat (UPZ)', name: 'H. Hardianto' },
+  { role: 'Anggota Bidang Dana dan Unit Pengumpul Zakat (UPZ)', name: 'Andi Hasbi' },
+  
+  { role: 'Koord. Bidang Pembangunan', name: 'Ir. Syamsul Bahri' },
+  { role: 'Wakil Koord. Bidang Pembangunan', name: 'Assoc Prof Abdul Fattah, ST., MT' },
+  { role: 'Anggota Bidang Pembangunan', name: 'Andi Akhmad, SE' },
+  { role: 'Anggota Bidang Pembangunan', name: 'Rasyid Yunior' },
+
+  { role: 'Koord. Bidang Pemeliharaan Masjid', name: 'Usman' },
+  { role: 'Wakil Koord. Bidang Pemeliharaan Masjid', name: 'H Johan, SE' },
+  { role: 'Anggota Bidang Pemeliharaan Masjid', name: 'Andi Akhmad, SE' },
+  { role: 'Anggota Bidang Pemeliharaan Masjid', name: 'H. Hidayat, SE' },
+
+  { role: 'Koord. Bidang Pendidikan', name: 'Assoc Prof Abd. Hamid, SE.,M.Si' },
+  { role: 'Wakil Koord. Bidang Pendidikan', name: 'Naim' },
+  { role: 'Anggota Bidang Pendidikan', name: 'Musfaridawati M, SH' },
+
+  // PILAR 2: KEAGAMAAN, PEMUDA, KELUARGA
+  { role: 'Wakil Ketua Bidang Keagamaan, Pemuda, dan Keluarga', name: 'Andi Baso Nyompa, ST, MT' },
+  
+  { role: 'Koord. Bidang Ibadah dan Dakwah', name: 'Dr. H. Muhammad Basran, LC, MA.' },
+  { role: 'Wakil Koord. Bidang Ibadah dan Dakwah', name: 'Sahrir, S.Ag' },
+  { role: 'Anggota Bidang Ibadah dan Dakwah', name: 'Hamdani Hamid' },
+  
+  { role: 'Koord. Bidang Majelis Ta\'lim', name: 'Hj. A. Syahribulan, SH,MH.' },
+  { role: 'Anggota Bidang Majelis Ta\'lim', name: 'Ny. Hj. Nurlela Rahim, S.Pd' },
+  { role: 'Anggota Bidang Majelis Ta\'lim', name: 'Ny. Hj. Marhudaya Husain' },
+
+  { role: 'Koord. Bidang Pembinaan Pemuda', name: 'Uzt Riansyah, S.Kom' },
+  { role: 'Wakil Koord. Bidang Pembinaan Pemuda', name: 'Asrul' },
+  { role: 'Anggota Bidang Pembinaan Pemuda', name: 'Rudi Kambuna' },
+
+  { role: 'Koord. Bidang Pemberdayaan Wanita', name: 'Ny. Hj.Sabtiara Sukardi' },
+  { role: 'Wakil Koord. Bidang Pemberdayaan Wanita', name: 'Ny. Hj. Hasbobi Husaini, M. Keb' },
+  { role: 'Anggota Bidang Pemberdayaan Wanita', name: 'Ny. Dr Marani Malik' },
+
+  // PILAR 3: SOSIAL DAN KOMUNIKASI
+  { role: 'Wakil Ketua Bidang Sosial dan Komunikasi', name: 'H. Ashar Djalil, S.Pi' },
+  
+  { role: 'Bidang Perayaan Hari Besar Islam (PHBI)', name: 'Uztad Yambas' },
+  { role: 'Wakil Bidang Perayaan Hari Besar Islam (PHBI)', name: 'Ir. Firman Ganuga' },
+  { role: 'Anggota Bidang Perayaan Hari Besar Islam (PHBI)', name: 'H Andi Mashuddin' },
+
+  { role: 'Bidang Sosial', name: 'H. Abd Rasyid, SE' },
+  { role: 'Wakil Bidang Sosial', name: 'Konpol Karman' },
+  { role: 'Anggota Bidang Sosial', name: 'Konpol Andi Sundra' },
+
+  { role: 'Bidang Humas', name: 'Assoc Prof Drs Muslimin, M.Si' },
+  { role: 'Wakil Bidang Humas', name: 'Muh. Wawan Azis, S.Pi' },
+  { role: 'Anggota Bidang Humas', name: 'Hidayat Latif' },
+
+  { role: 'Bidang Media', name: 'Muh. Kamil, SE' },
+  { role: 'Wakil Bidang Media', name: 'Liktor' },
+  { role: 'Anggota Bidang Media', name: 'Aspar' },
+  { role: 'Anggota Bidang Media', name: 'Hamdani' },
 ];
 
 const MOCK_BANKS: BankAccount[] = [
-  { bankName: 'BSI (Bank Syariah Indonesia)', accountNumber: '7700123456', holderName: 'Masjid Al Mustaqbal' },
-  { bankName: 'Bank Muamalat', accountNumber: '1230098765', holderName: 'Masjid Al Mustaqbal' }
+  { bankName: 'BSI (Bank Syariah Indonesia)', accountNumber: '7700123456', holderName: 'Masjid Al Muamalah' },
+  { bankName: 'Bank Muamalat', accountNumber: '1230098765', holderName: 'Masjid Al Muamalah' }
 ];
 
 const MOCK_POSTS: Post[] = [
@@ -62,33 +134,16 @@ const MOCK_POSTS: Post[] = [
     date: '2024-03-01',
     author: 'Ust. Abdullah',
     imageUrl: 'https://picsum.photos/seed/ramadhan/400/250'
-  },
-   {
-    id: '2',
-    title: 'Laporan Penyaluran Hewan Qurban 2024',
-    category: 'Berita',
-    excerpt: 'Alhamdulillah, tahun ini masjid kita telah menyalurkan 10 Sapi dan 25 Kambing kepada 500 mustahik di lingkungan sekitar.',
-    content: `Assalamualaikum Warahmatullahi Wabarakatuh...`,
-    date: '2024-06-20',
-    author: 'Panitia Qurban',
-    imageUrl: 'https://picsum.photos/seed/qurban/400/250'
   }
 ];
 
 const MOCK_TRANSACTIONS: Transaction[] = [
   { id: '1', date: '2024-06-28', description: 'Infaq Jumat', amount: 2500000, type: 'income', category: 'Infaq' },
   { id: '2', date: '2024-06-29', description: 'Bayar Listrik PLN', amount: 1200000, type: 'expense', category: 'Operasional' },
-  { id: '3', date: '2024-06-30', description: 'Honor Kebersihan', amount: 800000, type: 'expense', category: 'SDM' },
-  { id: '4', date: '2024-07-01', description: 'Sumbangan Hamba Allah', amount: 5000000, type: 'income', category: 'Donasi' },
 ];
 
 const MOCK_GALLERY: MediaItem[] = [
   { id: '1', type: 'image', url: 'https://picsum.photos/seed/g1/600/400', title: 'Shalat Idul Fitri 1445H', tags: ['Idul Fitri', 'Ibadah'] },
-  { id: '2', type: 'image', url: 'https://picsum.photos/seed/g2/600/400', title: 'Kegiatan Santunan Yatim', tags: ['Sosial', 'Santunan'] },
-  { id: '3', type: 'image', url: 'https://drive.google.com/file/d/1XWkYwY6118_vJjJ60gA-9Q3uVv7j4w/view?usp=sharing', title: 'Contoh Foto dari G-Drive', tags: ['Kegiatan'] }, 
-  { id: '4', type: 'video', url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Dokumentasi Video MP4', tags: ['Kajian', 'Video'] },
-  { id: '5', type: 'video', url: 'https://www.youtube.com/watch?v=F3a3d24q2Is', title: 'Kajian Rutin - YouTube', tags: ['Kajian', 'Rutin'] },
-  { id: '6', type: 'image', url: 'https://picsum.photos/seed/g6/600/400', title: 'Buka Puasa Bersama', tags: ['Ramadhan', 'Sosial'] },
 ];
 
 let MOCK_MESSAGES: InboxMessage[] = [
@@ -99,24 +154,14 @@ let MOCK_MESSAGES: InboxMessage[] = [
         message: 'Assalamualaikum admin, apakah bisa mengajukan proposal kegiatan remaja masjid bulan depan?',
         date: new Date().toISOString(),
         isRead: false
-    },
-    {
-        id: '2',
-        name: 'Budi Santoso',
-        email: 'budi@example.com',
-        message: 'Mohon info untuk pendaftaran TPA anak usia 5 tahun syaratnya apa saja ya?',
-        date: new Date(Date.now() - 86400000).toISOString(),
-        isRead: true
     }
 ];
 
 let MOCK_USERS: User[] = [
     { id: '1', name: 'Admin', role: UserRole.ADMIN, email: 'admin@masjid.id' },
     { id: '2', name: 'Budi', role: UserRole.JAMAAH, email: 'budi@gmail.com' },
-    { id: '3', name: 'Siti', role: UserRole.JAMAAH, email: 'siti@gmail.com' },
 ];
 
-// Mutable mock data for consultations to persist during session
 let MOCK_CONSULTATIONS: ConsultationItem[] = [
     {
         id: '1',
@@ -128,24 +173,12 @@ let MOCK_CONSULTATIONS: ConsultationItem[] = [
         status: 'answered',
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         answeredAt: new Date(Date.now() - 80000000).toISOString()
-    },
-    {
-        id: '2',
-        userId: '99',
-        userName: 'Fulan',
-        question: 'Apakah boleh berpuasa di hari Jumat saja?',
-        status: 'pending',
-        createdAt: new Date().toISOString(),
     }
 ];
 
-// --- API METHODS ---
-
 const fetchData = async (action: string, params: string = '') => {
   const url = getScriptUrl();
-  // Jika URL tidak ada (baik di local storage maupun env), return null agar fallback ke mock data
   if (!url) return null;
-
   try {
     const response = await fetch(`${url}?action=${action}${params}`);
     if (!response.ok) throw new Error('Network error');
@@ -158,53 +191,39 @@ const fetchData = async (action: string, params: string = '') => {
 
 const postData = async (payload: any) => {
     const url = getScriptUrl();
-    if (!url) return null; // Indicator for Mock Mode
-
+    if (!url) return null;
     const response = await fetch(url, {
         method: 'POST',
-        // IMPORTANT: Use text/plain to avoid CORS preflight (OPTIONS) requests which GAS handles poorly
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
     });
-    
     if (!response.ok) throw new Error("Server error");
     return await response.json();
 };
 
-// Fungsi helper untuk mengambil jadwal shalat Realtime (API Aladhan)
 const fetchRealtimePrayerTimes = async (): Promise<PrayerTime[] | null> => {
     try {
-        // Menggunakan API Aladhan (Gratis & Stabil)
-        // Lokasi: Makassar (WITA)
-        // Method 20: Kemenag RI
         const today = new Date();
         const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
-        
-        // Timeout 3 detik agar tidak blocking jika internet lambat
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
-
         const response = await fetch(
             `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=Makassar&country=Indonesia&method=20`,
             { signal: controller.signal }
         );
         clearTimeout(timeoutId);
-        
         if (!response.ok) throw new Error("External API Failed");
-        
         const data = await response.json();
         const t = data.data.timings;
-
         return [
             { name: 'Subuh', time: t.Fajr },
-            { name: 'Terbit', time: t.Sunrise }, // Shuruq
+            { name: 'Terbit', time: t.Sunrise },
             { name: 'Dzuhur', time: t.Dhuhr },
             { name: 'Ashar', time: t.Asr },
             { name: 'Maghrib', time: t.Maghrib },
             { name: 'Isya', time: t.Isha },
         ];
     } catch (error) {
-        console.warn("Gagal mengambil jadwal shalat realtime, mencoba database...", error);
         return null;
     }
 };
@@ -212,66 +231,43 @@ const fetchRealtimePrayerTimes = async (): Promise<PrayerTime[] | null> => {
 export const api = {
   getAppConfig: async (): Promise<MosqueGeneralInfo> => {
       const data = await fetchData('getAppConfig');
-      // Merge with default to ensure no null pointer exceptions
       let config = { ...DEFAULT_MOSQUE_INFO };
-
       if (Array.isArray(data)) {
-          // Convert Array of Key-Value [{key: 'name', value: 'X'}] to Object
           const configMap: any = {};
           data.forEach((item: any) => {
               if (item.key && item.value) {
                   configMap[item.key] = item.value;
               }
           });
-
-          // Map to structure
           if (configMap.name) config.name = configMap.name;
           if (configMap.slogan) config.slogan = configMap.slogan;
           if (configMap.description) config.description = configMap.description;
           if (configMap.address) config.address = configMap.address;
-          
           if (configMap.phone) config.contact.phone = configMap.phone;
           if (configMap.email) config.contact.email = configMap.email;
           if (configMap.whatsapp) config.contact.whatsapp = configMap.whatsapp;
-
           if (configMap.hero_image) config.images.hero = configMap.hero_image;
           if (configMap.profile_image) config.images.profile = configMap.profile_image;
           if (configMap.qris_image) config.images.qris = configMap.qris_image;
-          
           if (configMap.facebook) config.social.facebook = configMap.facebook;
           if (configMap.instagram) config.social.instagram = configMap.instagram;
           if (configMap.youtube) config.social.youtube = configMap.youtube;
       }
-      
       return config;
   },
-
   getPrayerTimes: async (): Promise<PrayerTime[]> => {
-    // STRATEGI:
-    // 1. Coba ambil dari Internet (API Aladhan - Kemenag RI)
     const realtimeData = await fetchRealtimePrayerTimes();
-    if (realtimeData) {
-        return realtimeData;
-    }
-
-    // 2. Jika offline/gagal, ambil dari Google Sheet Database
+    if (realtimeData) return realtimeData;
     const data = await fetchData('getPrayerTimes');
-    if (Array.isArray(data) && data.length > 0) {
-        return data;
-    }
-
-    // 3. Fallback terakhir: Mock Data
+    if (Array.isArray(data) && data.length > 0) return data;
     return MOCK_PRAYER_TIMES;
   },
-
   getPrograms: async (): Promise<ProgramService[]> => {
     const data = await fetchData('getPrograms');
     return Array.isArray(data) ? data : MOCK_PROGRAMS;
   },
-
   getProfile: async (): Promise<{ detail: MosqueProfileData, staff: Staff[] }> => {
     const data = await fetchData('getProfile');
-    
     if (data && data.details) {
       const detail: MosqueProfileData = {
         history: data.details.find((r: any) => r.section === 'history')?.content || '',
@@ -280,61 +276,47 @@ export const api = {
       };
       return { detail, staff: Array.isArray(data.staff) ? data.staff : [] };
     }
-
     return { detail: MOCK_PROFILE, staff: MOCK_STAFF };
   },
-
   getBankAccounts: async (): Promise<BankAccount[]> => {
     const data = await fetchData('getBankAccounts');
     return Array.isArray(data) ? data : MOCK_BANKS;
   },
-
   getPosts: async (): Promise<Post[]> => {
     const data = await fetchData('getPosts');
     return Array.isArray(data) ? data : MOCK_POSTS;
   },
-
   getPostById: async (id: string): Promise<Post | undefined> => {
       const data = await fetchData('getPostById', `&id=${id}`);
       if (data && !data.error) return data;
       return MOCK_POSTS.find(p => p.id === id);
   },
-
   getTransactions: async (): Promise<Transaction[]> => {
     const data = await fetchData('getFinance');
     return Array.isArray(data) ? data : MOCK_TRANSACTIONS;
   },
-
   getGallery: async (): Promise<MediaItem[]> => {
     const data = await fetchData('getGallery');
-    
-    // Perbaikan: Pastikan data tag di-parse jika dari Sheet datangnya string "Tag1, Tag2"
     if (Array.isArray(data)) {
         return data.map((item: any) => ({
             ...item,
-            // Jika 'tags' adalah string, split jadi array. Jika sudah array atau undefined, biarkan.
             tags: typeof item.tags === 'string' ? item.tags.split(',').map((t: string) => t.trim()) : item.tags
         }));
     }
     return MOCK_GALLERY;
   },
-
   getUsers: async (): Promise<User[]> => {
       const data = await fetchData('getUsers');
       return Array.isArray(data) ? data : MOCK_USERS;
   },
-
-  // --- MESSAGES API ---
   getMessages: async (): Promise<InboxMessage[]> => {
       const data = await fetchData('getMessages');
       return Array.isArray(data) ? data : MOCK_MESSAGES;
   },
-
   sendMessage: async (name: string, email: string, message: string): Promise<{success: boolean}> => {
       try {
           const result = await postData({ action: 'sendMessage', name, email, message });
           if (!result) {
-              // Mock Mode
               const newMessage: InboxMessage = {
                   id: Date.now().toString(),
                   name, email, message,
@@ -346,22 +328,17 @@ export const api = {
           }
           return result;
       } catch (e) {
-          console.error(e);
           return { success: false };
       }
   },
-
-  // --- CONSULTATION API ---
   getConsultations: async (): Promise<ConsultationItem[]> => {
     const data = await fetchData('getConsultations');
     return Array.isArray(data) ? data : MOCK_CONSULTATIONS;
   },
-
   submitConsultation: async (userId: string, userName: string, question: string): Promise<{success: boolean, message?: string}> => {
     try {
         const result = await postData({ action: 'submitConsultation', userId, userName, question });
         if (!result) {
-             // Mock Mode
             const newItem: ConsultationItem = {
                 id: Date.now().toString(),
                 userId, userName, question,
@@ -374,12 +351,10 @@ export const api = {
         return result;
     } catch(e) { return { success: false, message: 'Gagal kirim' }; }
   },
-
   answerConsultation: async (id: string, answer: string, answeredBy: string): Promise<{success: boolean, message?: string}> => {
     try {
         const result = await postData({ action: 'answerConsultation', id, answer, answeredBy });
         if (!result) {
-             // Mock Mode
             MOCK_CONSULTATIONS = MOCK_CONSULTATIONS.map(c => 
                 c.id === id ? { ...c, answer, answeredBy, status: 'answered', answeredAt: new Date().toISOString() } : c
             );
@@ -388,12 +363,10 @@ export const api = {
         return result;
     } catch(e) { return { success: false, message: 'Gagal kirim jawaban' }; }
   },
-
   login: async (email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> => {
     try {
       const result = await postData({ action: 'login', email, password });
       if (!result) {
-          // Mock Mode
           await new Promise(r => setTimeout(r, 800));
           if (email === 'admin@masjid.id' && password === 'admin123') {
             return { success: true, user: { id: '1', name: 'Administrator', role: UserRole.ADMIN, email, isUstadz: false } };
