@@ -19,6 +19,6 @@ export const DEFAULT_MOSQUE_INFO: MosqueGeneralInfo = {
     images: {
         hero: "https://picsum.photos/1920/1080?grayscale&blur=2", // Gambar besar di halaman Beranda
         profile: "https://picsum.photos/800/600?grayscale", // Gambar di halaman Profil
-        qris: "https://picsum.photos/250/250?blur=10" // Gambar QR Code di halaman Donasi
+        qris: "https://drive.google.com/thumbnail?id=1wE0do6V7bLb9kwYvSGisxGFQVzy0-UKU&sz=w1000" // Gambar QR Code di halaman Donasi
     }
 };
