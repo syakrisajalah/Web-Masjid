@@ -2,9 +2,9 @@ import { MosqueGeneralInfo } from './types';
 
 // Ini adalah data default (fallback) jika database belum terhubung atau kosong
 export const DEFAULT_MOSQUE_INFO: MosqueGeneralInfo = {
-    name: "Mesjid Al-Muamalah",
+    name: "Mesjid Besar Al-Muamalah",
     slogan: "Pusat Peradaban & Pemberdayaan Umat",
-    description: "Mesjid Al-Muamalah hadir sebagai pusat kegiatan ibadah yang nyaman, modern, dan inklusif. Kami berkomitmen untuk membangun masyarakat madani melalui program pendidikan, sosial, dan ekonomi berbasis syariah.",
+    description: "Mesjid Besar Al-Muamalah hadir sebagai pusat kegiatan ibadah yang nyaman, modern, dan inklusif. Kami berkomitmen untuk membangun masyarakat madani melalui program pendidikan, sosial, dan ekonomi berbasis syariah.",
     address: "JL Kejayaan Utara Raya BTP Blok L, Makassar",
     contact: {
         phone: "+62 812-3456-7890",
