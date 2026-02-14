@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Post } from '../types';
 import { api } from '../services/api';
-import { Calendar, User, ArrowLeft, Loader2, Share2 } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Loader2, Share2, ExternalLink } from 'lucide-react';
 
 export const BlogDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -19,6 +19,89 @@ export const BlogDetail: React.FC = () => {
         };
         loadPost();
     }, [id]);
+
+    // Fungsi untuk merender konten dengan cerdas (Auto Link & Auto Image)
+    const renderRichContent = (content: string) => {
+        if (!content) return null;
+
+        // Pecah berdasarkan baris baru (enter)
+        return content.split(/\r?\n/).map((line, lineIdx) => {
+            if (!line.trim()) return <br key={lineIdx} className="mb-4"/>;
+
+            // Regex untuk mendeteksi URL (http/https)
+            // Memecah baris berdasarkan URL, tapi tetap menyimpan URL-nya di array hasil
+            const parts = line.split(/(https?:\/\/[^\s]+)/g);
+
+            return (
+                <p key={lineIdx} className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed break-words">
+                    {parts.map((part, partIdx) => {
+                        // Jika bagian ini adalah URL
+                        if (part.match(/^https?:\/\//)) {
+                            
+                            // 1. Cek apakah ini Link Google Drive (Untuk Gambar)
+                            const driveMatch = part.match(/\/d\/([a-zA-Z0-9_-]+)/) || part.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                            if (driveMatch && driveMatch[1]) {
+                                // Ubah link view menjadi link thumbnail high-res agar bisa jadi gambar
+                                const thumbUrl = `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+                                return (
+                                    <span key={partIdx} className="block my-6">
+                                        <img 
+                                            src={thumbUrl} 
+                                            alt="Dokumentasi" 
+                                            className="rounded-lg shadow-md border border-gray-100 dark:border-gray-700 mx-auto max-h-[500px] object-contain bg-gray-50 dark:bg-gray-900"
+                                            onError={(e) => {
+                                                // Jika gambar gagal (misal link PDF), sembunyikan gambar dan tampilkan link biasa
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                            }}
+                                        />
+                                        {/* Fallback Link (tersembunyi default, muncul jika bukan gambar) */}
+                                        <a 
+                                            href={part} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="hidden text-emerald-600 dark:text-emerald-400 hover:underline text-sm mt-1 items-center gap-1"
+                                        >
+                                            <ExternalLink size={14} className="inline" /> Buka Tautan Drive
+                                        </a>
+                                    </span>
+                                );
+                            }
+
+                            // 2. Cek apakah ini Link Gambar Langsung (jpg, png, dll)
+                            if (part.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i)) {
+                                return (
+                                     <span key={partIdx} className="block my-6">
+                                        <img 
+                                            src={part} 
+                                            alt="Gambar Artikel" 
+                                            className="rounded-lg shadow-md mx-auto max-h-[500px] object-contain" 
+                                        />
+                                    </span>
+                                );
+                            }
+
+                            // 3. Jika URL biasa, jadikan Link yang bisa diklik
+                            return (
+                                <a 
+                                    key={partIdx} 
+                                    href={part} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium break-all inline-flex items-center gap-0.5"
+                                >
+                                    {part} <ExternalLink size={12} className="opacity-50" />
+                                </a>
+                            );
+                        }
+                        
+                        // Jika teks biasa
+                        return <span key={partIdx}>{part}</span>;
+                    })}
+                </p>
+            );
+        });
+    };
 
     if (loading) {
         return (
@@ -82,10 +165,7 @@ export const BlogDetail: React.FC = () => {
             <div className="container mx-auto px-4 -mt-6 relative z-10">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 md:p-10 max-w-4xl mx-auto border border-gray-100 dark:border-gray-700">
                     <div className="prose dark:prose-invert prose-emerald max-w-none">
-                         {/* Render content with whitespace preserved for basic formatting */}
-                        <div className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
-                            {post.content}
-                        </div>
+                         {renderRichContent(post.content)}
                     </div>
 
                     <div className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
